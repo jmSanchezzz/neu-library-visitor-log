@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, GraduationCap } from "lucide-react";
+import { LogIn, GraduationCap, ShieldCheck, User as UserIcon } from "lucide-react";
 import { ALLOWED_DOMAIN, ADMIN_EMAIL, UserRole } from "@/lib/constants";
 import { mockStore, User } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
@@ -17,12 +17,14 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = (e: React.FormEvent | string) => {
+    if (typeof e !== 'string') e.preventDefault();
+    const loginEmail = typeof e === 'string' ? e : email;
+    
     setIsLoading(true);
 
     // Mock Domain Check
-    if (!email.endsWith(ALLOWED_DOMAIN) && email !== ADMIN_EMAIL) {
+    if (!loginEmail.endsWith(ALLOWED_DOMAIN) && loginEmail !== ADMIN_EMAIL) {
       toast({
         title: "Invalid Email Domain",
         description: `Please use your institutional @neu.edu.ph account.`,
@@ -34,13 +36,13 @@ export default function LoginPage() {
 
     // Determine Role
     let role: UserRole = "Student";
-    if (email === ADMIN_EMAIL) role = "Admin";
-    else if (email.includes("faculty")) role = "Faculty";
-    else if (email.includes("emp")) role = "Employee";
+    if (loginEmail === ADMIN_EMAIL) role = "Admin";
+    else if (loginEmail.includes("faculty")) role = "Faculty";
+    else if (loginEmail.includes("emp")) role = "Employee";
 
     // Check if user exists or block status
     const existingUsers = mockStore.getUsers();
-    const user = existingUsers.find(u => u.email === email);
+    const user = existingUsers.find(u => u.email === loginEmail);
 
     if (user?.isBlocked) {
       router.push("/denied");
@@ -49,8 +51,8 @@ export default function LoginPage() {
 
     const newUser: User = user || {
       id: Math.random().toString(36).substring(7),
-      email,
-      name: email.split("@")[0].replace(".", " "),
+      email: loginEmail,
+      name: loginEmail.split("@")[0].replace(".", " "),
       role,
       isBlocked: false
     };
@@ -119,6 +121,32 @@ export default function LoginPage() {
                 )}
               </Button>
             </form>
+
+            <div className="mt-8 pt-6 border-t border-dashed">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Prototype Quick Access</p>
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-10 border-sidebar text-sidebar hover:bg-sidebar hover:text-white"
+                  onClick={() => handleLogin(ADMIN_EMAIL)}
+                  disabled={isLoading}
+                >
+                  <ShieldCheck className="w-4 h-4 mr-2" />
+                  Admin
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-10 border-primary text-primary hover:bg-primary hover:text-white"
+                  onClick={() => handleLogin("student.demo@neu.edu.ph")}
+                  disabled={isLoading}
+                >
+                  <UserIcon className="w-4 h-4 mr-2" />
+                  Student
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
