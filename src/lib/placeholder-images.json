@@ -1,3 +1,10 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "neu-library-hero",
+      "description": "The New Era University Library Building",
+      "imageUrl": "https://picsum.photos/seed/neu-lib-1/1200/800",
+      "imageHint": "modern library"
+    }
+  ]
 }

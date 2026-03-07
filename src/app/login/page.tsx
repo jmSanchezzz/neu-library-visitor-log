@@ -1,14 +1,13 @@
-
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, GraduationCap, ShieldCheck, User as UserIcon, BookOpen } from "lucide-react";
+import { LogIn, GraduationCap, ShieldCheck, User as UserIcon, BookOpen, Sparkles } from "lucide-react";
 import { ALLOWED_DOMAIN, ADMIN_EMAIL, UserRole } from "@/lib/constants";
 import { mockStore, User } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
@@ -85,74 +84,79 @@ export default function LoginPage() {
             src={heroImage.imageUrl}
             alt={heroImage.description}
             fill
-            className="object-cover opacity-60 mix-blend-overlay"
+            className="object-cover opacity-70 transition-transform duration-1000 hover:scale-105"
             priority
             data-ai-hint={heroImage.imageHint}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-br from-sidebar via-sidebar/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-sidebar/90 via-sidebar/40 to-transparent" />
         
         <div className="relative z-10 flex flex-col justify-center px-12 lg:px-24 text-white">
-          <div className="bg-accent/20 backdrop-blur-sm p-4 rounded-2xl w-fit mb-8 border border-accent/30">
-            <GraduationCap className="w-12 h-12 text-accent" />
+          <div className="bg-accent p-3 rounded-2xl w-fit mb-8 shadow-2xl">
+            <GraduationCap className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-5xl lg:text-7xl font-black tracking-tighter mb-6 leading-none">
+          <h1 className="text-5xl lg:text-7xl font-black tracking-tighter mb-4 leading-none drop-shadow-lg">
             NEU LIBRARY <br />
             <span className="text-accent">CONNECT</span>
           </h1>
-          <p className="text-xl text-white/80 max-w-lg font-medium leading-relaxed">
-            Welcome to the digital gateway of New Era University Library. 
-            Access world-class resources and manage your visits seamlessly.
+          <p className="text-xl text-white/90 max-w-lg font-medium leading-relaxed drop-shadow-md">
+            The heart of research and excellence at New Era University. 
+            Sign in to log your visit and access premium library services.
           </p>
           
           <div className="mt-12 flex items-center space-x-6">
-            <div className="flex -space-x-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="w-12 h-12 rounded-full border-4 border-sidebar bg-muted flex items-center justify-center text-xs font-bold text-sidebar overflow-hidden">
-                  <Image src={`https://picsum.photos/seed/${i+10}/100/100`} alt="User" width={100} height={100} />
+            <div className="flex -space-x-3">
+              {[11, 12, 13].map((i) => (
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-sidebar bg-muted overflow-hidden ring-2 ring-accent/30">
+                  <Image src={`https://picsum.photos/seed/${i}/100/100`} alt="User" width={40} height={40} />
                 </div>
               ))}
             </div>
-            <p className="text-sm font-semibold text-white/60">
-              Joined by 2,000+ students & faculty
-            </p>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-accent">Active Now</span>
+              <span className="text-xs font-medium text-white/60">Join 2,000+ Eagle Scholars</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Form Side */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-12 lg:p-24 bg-white relative">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-12 lg:p-24 bg-white">
         <div className="w-full max-w-md space-y-8">
           <div className="md:hidden flex flex-col items-center mb-8">
             <div className="p-4 bg-sidebar rounded-full shadow-lg mb-4">
               <GraduationCap className="w-10 h-10 text-accent" />
             </div>
-            <h2 className="text-2xl font-bold text-sidebar">NEU Library Connect</h2>
+            <h2 className="text-2xl font-bold text-sidebar uppercase tracking-tight">NEU Library Connect</h2>
           </div>
 
-          <div className="space-y-2">
-            <h3 className="text-3xl font-bold tracking-tight text-sidebar">Sign In</h3>
-            <p className="text-muted-foreground">Please enter your institutional credentials to proceed.</p>
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2 text-accent">
+              <Sparkles className="w-5 h-5" />
+              <span className="text-xs font-bold uppercase tracking-widest">Official Portal</span>
+            </div>
+            <h3 className="text-4xl font-black tracking-tight text-sidebar">Sign In</h3>
+            <p className="text-muted-foreground font-medium">Use your university email address to get started.</p>
           </div>
 
           <Card className="border-none shadow-none">
             <CardContent className="p-0">
               <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sidebar font-bold">University Email</Label>
+                  <Label htmlFor="email" className="text-sidebar font-bold ml-1">University Email</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="name@neu.edu.ph"
+                    placeholder="student.id@neu.edu.ph"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-12 bg-muted/30 border-muted focus:ring-primary text-lg"
+                    className="h-14 bg-muted/20 border-muted focus:ring-primary text-lg px-4 rounded-xl"
                   />
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold text-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-primary/20"
+                  className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-bold text-lg transition-all rounded-xl shadow-xl shadow-primary/20"
                   disabled={isLoading}
                 >
                   {isLoading ? "Authenticating..." : (
@@ -164,42 +168,42 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <div className="relative my-10">
+              <div className="relative my-12">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-muted" />
+                  <span className="w-full border-t border-muted/60" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-muted-foreground font-bold tracking-widest">Prototype Access</span>
+                  <span className="bg-white px-4 text-muted-foreground/60 font-bold tracking-[0.2em]">Prototype Quick Access</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <Button 
                   variant="outline" 
-                  className="h-12 border-sidebar text-sidebar hover:bg-sidebar hover:text-white font-bold group"
+                  className="h-14 border-2 border-sidebar text-sidebar hover:bg-sidebar hover:text-white font-black rounded-xl group transition-all"
                   onClick={() => handleLogin(ADMIN_EMAIL)}
                   disabled={isLoading}
                 >
-                  <ShieldCheck className="w-4 h-4 mr-2 text-accent group-hover:text-white" />
-                  Admin
+                  <ShieldCheck className="w-5 h-5 mr-2 text-accent group-hover:text-white" />
+                  ADMIN
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="h-12 border-primary text-primary hover:bg-primary hover:text-white font-bold group"
+                  className="h-14 border-2 border-primary text-primary hover:bg-primary hover:text-white font-black rounded-xl group transition-all"
                   onClick={() => handleLogin("student.demo@neu.edu.ph")}
                   disabled={isLoading}
                 >
-                  <UserIcon className="w-4 h-4 mr-2 text-sidebar group-hover:text-white" />
-                  Student
+                  <UserIcon className="w-5 h-5 mr-2 text-sidebar group-hover:text-white" />
+                  STUDENT
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          <div className="pt-8 flex items-center justify-center space-x-2 text-muted-foreground/40">
+          <div className="pt-12 flex items-center justify-center space-x-3 text-muted-foreground/30">
              <BookOpen className="w-4 h-4" />
-             <p className="text-[10px] font-bold uppercase tracking-widest">
-               NEU Library Management System &copy; {new Date().getFullYear()}
+             <p className="text-[10px] font-bold uppercase tracking-[0.3em]">
+               NEU LMS &copy; {new Date().getFullYear()}
              </p>
           </div>
         </div>
