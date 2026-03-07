@@ -95,7 +95,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-sidebar via-sidebar/20 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-sidebar/60 to-transparent" />
         
-        {/* Vertical Light Bar Accents (Inspired by the photo) */}
+        {/* Vertical Light Bar Accents (Inspired by the photo's red/green lighting) */}
         <div className="absolute left-0 top-1/4 w-1.5 h-32 bg-green-500/60 blur-[2px] rounded-r-full animate-pulse" />
         <div className="absolute left-0 top-1/2 w-1.5 h-40 bg-red-500/60 blur-[2px] rounded-r-full animate-pulse delay-700" />
         
@@ -188,7 +188,7 @@ export default function LoginPage() {
 
               <div className="relative flex items-center py-4">
                 <div className="flex-grow border-t border-muted" />
-                <span className="flex-shrink mx-4 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Developer Portal</span>
+                <span className="flex-shrink mx-4 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Prototype Quick Access</span>
                 <div className="flex-grow border-t border-muted" />
               </div>
 
