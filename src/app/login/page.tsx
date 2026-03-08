@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -17,8 +16,15 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [year, setYear] = useState<number | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    setMounted(true);
+    setYear(new Date().getFullYear());
+  }, []);
 
   const heroImage = PlaceHolderImages.find(img => img.id === "neu-library-hero");
 
@@ -76,6 +82,8 @@ export default function LoginPage() {
     }, 800);
   };
 
+  if (!mounted) return null;
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background selection:bg-accent selection:text-white">
       {/* Visual Side (Hero) */}
@@ -92,14 +100,12 @@ export default function LoginPage() {
           />
         )}
         
-        {/* Subtle Overlays to ensure text readability without hiding the image */}
         <div className="absolute inset-0 bg-sidebar/20" />
         <div className="absolute inset-0 bg-gradient-to-t from-sidebar/80 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-sidebar/40 via-transparent to-transparent" />
         
-        {/* Vertical Light Bar Accents based on architectural design */}
         <div className="absolute left-0 top-1/4 w-1.5 h-32 bg-green-500/60 blur-[2px] rounded-r-full animate-pulse" />
-        <div className="absolute left-0 top-1/2 w-1.5 h-40 bg-red-500/60 blur-[2px] rounded-r-full animate-pulse delay-700" />
+        <div className="absolute left-0 top-1/2 w-1.5 h-40 bg-red-500/60 blur-[2px] rounded-r-full animate-pulse opacity-70" />
         
         <div className="relative z-10 flex flex-col justify-end p-12 lg:p-24 text-white w-full">
           <div className="mb-6 flex items-center space-x-3">
@@ -183,7 +189,7 @@ export default function LoginPage() {
                       </>
                     )}
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer" />
                 </Button>
               </form>
 
@@ -222,18 +228,14 @@ export default function LoginPage() {
                 <div className="h-4 w-px bg-current" />
                 <Sparkles className="w-5 h-5" />
              </div>
-             <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-muted-foreground text-center">
-               New Era University &copy; {new Date().getFullYear()}
-             </p>
+             {year && (
+               <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-muted-foreground text-center">
+                 New Era University &copy; {year}
+               </p>
+             )}
           </div>
         </div>
       </div>
-      
-      <style jsx global>{`
-        @keyframes shimmer {
-          100% { transform: translateX(100%); }
-        }
-      `}</style>
     </div>
   );
 }
