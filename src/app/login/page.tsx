@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -84,15 +85,17 @@ export default function LoginPage() {
             src={heroImage.imageUrl}
             alt={heroImage.description}
             fill
-            className="object-cover opacity-90 transition-transform duration-10000 group-hover:scale-110"
+            className="object-cover transition-transform duration-10000 group-hover:scale-105"
             priority
+            unoptimized
             data-ai-hint={heroImage.imageHint}
           />
         )}
         
-        {/* Creative Overlays mirroring the photo's accents */}
-        <div className="absolute inset-0 bg-gradient-to-t from-sidebar via-sidebar/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-sidebar/60 to-transparent" />
+        {/* Subtle Overlays to ensure text readability without hiding the image */}
+        <div className="absolute inset-0 bg-sidebar/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-sidebar/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-sidebar/40 via-transparent to-transparent" />
         
         {/* Vertical Light Bar Accents based on architectural design */}
         <div className="absolute left-0 top-1/4 w-1.5 h-32 bg-green-500/60 blur-[2px] rounded-r-full animate-pulse" />
@@ -121,7 +124,7 @@ export default function LoginPage() {
             <div className="flex -space-x-4">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="w-10 h-10 rounded-full border-2 border-sidebar bg-muted overflow-hidden">
-                  <Image src={`https://picsum.photos/seed/user-${i}/100/100`} alt="Active User" width={40} height={40} />
+                  <Image src={`https://picsum.photos/seed/user-${i}/100/100`} alt="Active User" width={40} height={40} unoptimized />
                 </div>
               ))}
             </div>
@@ -135,7 +138,6 @@ export default function LoginPage() {
 
       {/* Form Side */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 bg-white relative">
-        {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: 'radial-gradient(#001F3F 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         
