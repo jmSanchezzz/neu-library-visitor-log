@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -85,17 +84,17 @@ export default function LoginPage() {
             src={heroImage.imageUrl}
             alt={heroImage.description}
             fill
-            className="object-cover opacity-80 transition-transform duration-10000 group-hover:scale-110"
+            className="object-cover opacity-90 transition-transform duration-10000 group-hover:scale-110"
             priority
             data-ai-hint={heroImage.imageHint}
           />
         )}
         
         {/* Creative Overlays mirroring the photo's accents */}
-        <div className="absolute inset-0 bg-gradient-to-t from-sidebar via-sidebar/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-sidebar via-sidebar/40 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-sidebar/60 to-transparent" />
         
-        {/* Vertical Light Bar Accents (Inspired by the photo's red/green lighting) */}
+        {/* Vertical Light Bar Accents */}
         <div className="absolute left-0 top-1/4 w-1.5 h-32 bg-green-500/60 blur-[2px] rounded-r-full animate-pulse" />
         <div className="absolute left-0 top-1/2 w-1.5 h-40 bg-red-500/60 blur-[2px] rounded-r-full animate-pulse delay-700" />
         
@@ -105,30 +104,30 @@ export default function LoginPage() {
              <span className="text-xs font-bold tracking-[0.4em] text-accent uppercase">Institutional Portal</span>
           </div>
           
-          <h1 className="text-5xl lg:text-8xl font-black tracking-tighter leading-[0.85] mb-8 drop-shadow-2xl">
+          <h1 className="text-5xl lg:text-7xl font-black tracking-tighter leading-[0.85] mb-8 drop-shadow-2xl">
             NEW ERA <br />
             UNIVERSITY <br />
             <span className="text-accent inline-flex items-center">
               LIBRARY
-              <MoveRight className="ml-4 w-12 h-12 lg:w-20 lg:h-20 text-white/20" />
+              <MoveRight className="ml-4 w-12 h-12 lg:w-16 lg:h-16 text-white/20" />
             </span>
           </h1>
           
-          <p className="text-xl text-white/80 max-w-lg font-medium leading-relaxed drop-shadow-md border-l-2 border-accent/30 pl-6">
+          <p className="text-xl text-white/90 max-w-lg font-medium leading-relaxed drop-shadow-md border-l-2 border-accent/30 pl-6">
             Step into a world of boundless knowledge. Your gateway to academic excellence and research discovery starts here.
           </p>
           
           <div className="mt-12 pt-12 border-t border-white/10 flex items-center space-x-8">
             <div className="flex -space-x-4">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-12 h-12 rounded-full border-4 border-sidebar bg-muted overflow-hidden">
-                  <Image src={`https://picsum.photos/seed/user-${i}/100/100`} alt="Active User" width={48} height={48} />
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-sidebar bg-muted overflow-hidden">
+                  <Image src={`https://picsum.photos/seed/user-${i}/100/100`} alt="Active User" width={40} height={40} />
                 </div>
               ))}
             </div>
             <div>
-              <p className="text-sm font-bold text-white">Join 15,000+ Students</p>
-              <p className="text-xs text-white/50">Modernizing the NEU experience</p>
+              <p className="text-xs font-bold text-white">Join 15,000+ Students</p>
+              <p className="text-[10px] text-white/50">Modernizing the NEU experience</p>
             </div>
           </div>
         </div>
@@ -140,19 +139,19 @@ export default function LoginPage() {
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
              style={{ backgroundImage: 'radial-gradient(#001F3F 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
         
-        <div className="w-full max-w-md space-y-10 relative z-10">
-          <div className="flex flex-col items-center md:items-start">
+        <div className="w-full max-w-md space-y-8 relative z-10">
+          <div className="flex flex-col items-center">
             <div className="p-4 bg-sidebar rounded-2xl shadow-2xl mb-6 transform -rotate-3 hover:rotate-0 transition-transform cursor-pointer group">
               <GraduationCap className="w-10 h-10 text-accent group-hover:scale-110 transition-transform" />
             </div>
-            <div className="space-y-2 text-center md:text-left">
+            <div className="space-y-2 text-center">
               <h3 className="text-4xl font-black tracking-tight text-sidebar uppercase">Sign In</h3>
               <p className="text-muted-foreground font-medium">Please use your <span className="text-primary font-bold">@neu.edu.ph</span> account</p>
             </div>
           </div>
 
           <Card className="border-none shadow-none bg-transparent">
-            <CardContent className="p-0 space-y-8">
+            <CardContent className="p-0 space-y-6">
               <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-3">
                   <Label htmlFor="email" className="text-sidebar font-bold text-xs uppercase tracking-widest ml-1 opacity-70">Email Address</Label>
@@ -195,20 +194,20 @@ export default function LoginPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Button 
                   variant="outline" 
-                  className="h-14 border-2 border-sidebar text-sidebar hover:bg-sidebar hover:text-white font-black rounded-2xl group transition-all"
+                  className="h-12 border-2 border-sidebar text-sidebar hover:bg-sidebar hover:text-white font-black rounded-xl group transition-all"
                   onClick={() => handleLogin(ADMIN_EMAIL)}
                   disabled={isLoading}
                 >
-                  <ShieldCheck className="w-5 h-5 mr-2 text-accent group-hover:text-white" />
+                  <ShieldCheck className="w-4 h-4 mr-2 text-accent group-hover:text-white" />
                   ADMIN
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="h-14 border-2 border-primary/20 text-primary hover:bg-primary hover:text-white font-black rounded-2xl group transition-all"
+                  className="h-12 border-2 border-primary/20 text-primary hover:bg-primary hover:text-white font-black rounded-xl group transition-all"
                   onClick={() => handleLogin("student.demo@neu.edu.ph")}
                   disabled={isLoading}
                 >
-                  <UserIcon className="w-5 h-5 mr-2 text-sidebar group-hover:text-white" />
+                  <UserIcon className="w-4 h-4 mr-2 text-sidebar group-hover:text-white" />
                   STUDENT
                 </Button>
               </div>
