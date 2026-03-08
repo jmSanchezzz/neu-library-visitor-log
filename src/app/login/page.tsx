@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,7 +11,9 @@ import { LogIn, GraduationCap, ShieldCheck, User as UserIcon, BookOpen, Sparkles
 import { ALLOWED_DOMAIN, ADMIN_EMAIL, UserRole } from "@/lib/constants";
 import { mockStore, User } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
+
+// Direct import of the local image file to ensure it's handled by the bundler
+import heroImg from './login_library.jpg';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -24,8 +27,6 @@ export default function LoginPage() {
     setMounted(true);
     setYear(new Date().getFullYear());
   }, []);
-
-  const heroImage = PlaceHolderImages.find(img => img.id === "neu-library-hero");
 
   const handleLogin = (e: React.FormEvent | string) => {
     if (typeof e !== 'string') e.preventDefault();
@@ -87,23 +88,20 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col md:flex-row bg-background selection:bg-accent selection:text-white">
       {/* Visual Side (Hero) */}
       <div className="hidden md:flex md:w-1/2 lg:w-3/5 relative overflow-hidden group">
-        {heroImage && (
-          <img
-            src={heroImage.imageUrl}
-            alt={heroImage.description}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-[10000ms] group-hover:scale-105"
-            data-ai-hint={heroImage.imageHint}
-          />
-        )}
+        <img
+          src={heroImg.src}
+          alt="NEU Library"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-[10000ms] group-hover:scale-105"
+        />
         
-        {/* Layered Overlays for readability and style */}
+        {/* Layered Overlays */}
         <div className="absolute inset-0 bg-sidebar/20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-sidebar/80 via-sidebar/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-sidebar/40 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-sidebar/90 via-sidebar/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-sidebar/50 via-transparent to-transparent" />
         
-        {/* Vertical Light Bar Accents based on architectural design */}
-        <div className="absolute left-0 top-1/4 w-1.5 h-32 bg-green-500/60 blur-[2px] rounded-r-full animate-pulse" />
-        <div className="absolute left-0 top-1/2 w-1.5 h-40 bg-red-500/60 blur-[2px] rounded-r-full animate-pulse delay-700" />
+        {/* Vertical Light Bar Accents */}
+        <div className="absolute left-0 top-1/4 w-1.5 h-32 bg-green-500/80 blur-[1px] rounded-r-full animate-pulse shadow-[0_0_15px_rgba(34,197,94,0.6)]" />
+        <div className="absolute left-0 top-1/2 w-1.5 h-40 bg-red-500/80 blur-[1px] rounded-r-full animate-pulse delay-700 shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
         
         <div className="relative z-10 flex flex-col justify-end p-12 lg:p-24 text-white w-full">
           <div className="mb-6 flex items-center space-x-3">
@@ -124,20 +122,6 @@ export default function LoginPage() {
             <p className="text-xl text-white/90 font-medium leading-relaxed drop-shadow-md border-l-4 border-accent pl-6 py-2">
               Step into a world of boundless knowledge. Your gateway to academic excellence and research discovery starts here.
             </p>
-            
-            <div className="flex items-center space-x-6 pt-4">
-              <div className="flex -space-x-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-sidebar bg-muted overflow-hidden shadow-xl">
-                    <img src={`https://picsum.photos/seed/user-${i}/100/100`} alt="Active User" className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white uppercase tracking-widest">Join 15,000+ Students</p>
-                <p className="text-[10px] text-white/60">Modernizing the NEU experience</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
