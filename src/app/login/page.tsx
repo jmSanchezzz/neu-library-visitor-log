@@ -94,7 +94,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-sidebar via-sidebar/40 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-sidebar/60 to-transparent" />
         
-        {/* Vertical Light Bar Accents */}
+        {/* Vertical Light Bar Accents based on architectural design */}
         <div className="absolute left-0 top-1/4 w-1.5 h-32 bg-green-500/60 blur-[2px] rounded-r-full animate-pulse" />
         <div className="absolute left-0 top-1/2 w-1.5 h-40 bg-red-500/60 blur-[2px] rounded-r-full animate-pulse delay-700" />
         
