@@ -20,10 +20,19 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { COLLEGES, REASONS, UserRole } from "@/lib/constants";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { COLLEGES, REASONS } from "@/lib/constants";
 import { mockStore, VisitLog } from "@/lib/store";
-import { Download, Filter, Search, RotateCcw } from "lucide-react";
-import { format } from "date-fns";
+import { 
+  Download, 
+  Filter, 
+  Search, 
+  RotateCcw, 
+  Calendar as CalendarIcon 
+} from "lucide-react";
+import { format, isAfter, isBefore, startOfDay, endOfDay, parseISO } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export default function ReportsPage() {
   const [logs, setLogs] = useState<VisitLog[]>([]);
@@ -32,11 +41,15 @@ export default function ReportsPage() {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [collegeFilter, setCollegeFilter] = useState<string>("all");
   const [reasonFilter, setReasonFilter] = useState<string>("all");
+  
+  // Date range states
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
 
   useEffect(() => {
     const allLogs = mockStore.getVisitLogs();
     setLogs(allLogs);
-    setFilteredLogs(allLogs.reverse());
+    setFilteredLogs([...allLogs].reverse());
   }, []);
 
   useEffect(() => {
@@ -61,8 +74,23 @@ export default function ReportsPage() {
       result = result.filter(l => l.reason === reasonFilter);
     }
 
-    setFilteredLogs(result);
-  }, [search, roleFilter, collegeFilter, reasonFilter, logs]);
+    // Date Range Filtering
+    if (startDate) {
+      result = result.filter(l => {
+        const logDate = parseISO(l.timestamp);
+        return isAfter(logDate, startOfDay(startDate)) || logDate.getTime() === startOfDay(startDate).getTime();
+      });
+    }
+
+    if (endDate) {
+      result = result.filter(l => {
+        const logDate = parseISO(l.timestamp);
+        return isBefore(logDate, endOfDay(endDate)) || logDate.getTime() === endOfDay(endDate).getTime();
+      });
+    }
+
+    setFilteredLogs(result.reverse());
+  }, [search, roleFilter, collegeFilter, reasonFilter, startDate, endDate, logs]);
 
   const exportToCSV = () => {
     const headers = ["Name", "Email", "Role", "Department", "Reason", "Timestamp"];
@@ -94,6 +122,8 @@ export default function ReportsPage() {
     setRoleFilter("all");
     setCollegeFilter("all");
     setReasonFilter("all");
+    setStartDate(undefined);
+    setEndDate(undefined);
   };
 
   return (
@@ -123,7 +153,7 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-2">
             <div className="space-y-1">
               <label className="text-xs font-semibold uppercase text-muted-foreground ml-1">User Role</label>
               <Select onValueChange={setRoleFilter} value={roleFilter}>
@@ -163,6 +193,58 @@ export default function ReportsPage() {
                   {REASONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase text-muted-foreground ml-1">Start Date</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal h-10",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold uppercase text-muted-foreground ml-1">End Date</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal h-10",
+                      !endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>
