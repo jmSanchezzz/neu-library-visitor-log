@@ -11,13 +11,20 @@ import { ALLOWED_DOMAIN, ADMIN_EMAIL, UserRole } from "@/lib/constants";
 import { mockStore, User } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 
-// Static import for the bundler to handle the local image file
-import heroImg from './pics/login_library.jpg';
+// Static imports for institutional photos
+import heroImg1 from './pics/login_library.jpg';
+import heroImg3 from './pics/login_library3.jpg';
+
+const SLIDES = [
+  { img: heroImg1, alt: "NEU Library Main Entrance" },
+  { img: heroImg3, alt: "NEU Library Research Area" }
+];
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [year, setYear] = useState<number | null>(null);
   const router = useRouter();
   const { toast } = useToast();
@@ -25,6 +32,12 @@ export default function LoginPage() {
   useEffect(() => {
     setMounted(true);
     setYear(new Date().getFullYear());
+    
+    const slideTimer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+    }, 6000);
+    
+    return () => clearInterval(slideTimer);
   }, []);
 
   const handleLogin = (e: React.FormEvent | string) => {
@@ -85,13 +98,18 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background selection:bg-accent selection:text-white">
-      {/* Visual Side (Hero) */}
+      {/* Visual Side (Hero Slideshow) */}
       <div className="hidden md:flex md:w-1/2 lg:w-3/5 relative overflow-hidden group">
-        <img
-          src={heroImg.src}
-          alt="NEU Library"
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-[10000ms] group-hover:scale-105"
-        />
+        {SLIDES.map((slide, index) => (
+          <img
+            key={index}
+            src={slide.img.src}
+            alt={slide.alt}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+              index === currentSlide ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        ))}
         
         {/* Layered Overlays */}
         <div className="absolute inset-0 bg-sidebar/20" />
