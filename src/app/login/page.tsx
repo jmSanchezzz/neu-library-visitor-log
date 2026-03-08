@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,8 +11,8 @@ import { ALLOWED_DOMAIN, ADMIN_EMAIL, UserRole } from "@/lib/constants";
 import { mockStore, User } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 
-// Direct import of the local image file to ensure it's handled by the bundler
-import heroImg from './login_library.jpg';
+// Static import for the bundler to handle the local image file
+import heroImg from './pics/login_library.jpg';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

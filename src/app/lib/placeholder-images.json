@@ -1,10 +1,9 @@
-
 {
   "placeholderImages": [
     {
       "id": "neu-library-hero",
       "description": "The New Era University Library building featured in the institutional portal",
-      "imageUrl": "/pics/login_library.jpg",
+      "imageUrl": "/src/app/login/pics/login_library.jpg",
       "imageHint": "modern library"
     }
   ]
