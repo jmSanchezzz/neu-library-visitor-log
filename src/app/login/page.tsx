@@ -97,143 +97,164 @@ export default function LoginPage() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-background selection:bg-accent selection:text-white">
-      {/* Visual Side (Hero Slideshow) */}
-      <div className="hidden md:flex md:w-1/2 lg:w-3/5 relative overflow-hidden group">
-        {SLIDES.map((slide, index) => (
-          <img
-            key={index}
-            src={slide.img.src}
-            alt={slide.alt}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
-              index === currentSlide ? "opacity-100" : "opacity-0"
-            }`}
-          />
-        ))}
-        
-        {/* Layered Overlays */}
-        <div className="absolute inset-0 bg-sidebar/20" />
-        <div className="absolute inset-0 bg-gradient-to-t from-sidebar/90 via-sidebar/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-sidebar/50 via-transparent to-transparent" />
-        
-        {/* Vertical Light Bar Accents */}
-        <div className="absolute left-0 top-1/4 w-1.5 h-32 bg-green-500/80 blur-[1px] rounded-r-full animate-pulse shadow-[0_0_15px_rgba(34,197,94,0.6)]" />
-        <div className="absolute left-0 top-1/2 w-1.5 h-40 bg-red-500/80 blur-[1px] rounded-r-full animate-pulse delay-700 shadow-[0_0_15px_rgba(239,68,68,0.6)]" />
-        
-        <div className="relative z-10 flex flex-col justify-end p-12 lg:p-24 text-white w-full">
-          <div className="mb-6 flex items-center space-x-3">
-             <div className="h-[2px] w-12 bg-accent/80" />
-             <span className="text-sm font-black tracking-[0.5em] text-accent uppercase drop-shadow-lg">Institutional Portal</span>
-          </div>
-          
-          <h1 className="text-5xl lg:text-7xl font-black tracking-tighter leading-[0.85] mb-8 drop-shadow-2xl">
-            NEW ERA <br />
-            UNIVERSITY <br />
-            <span className="text-accent inline-flex items-center">
-              LIBRARY
-              <MoveRight className="ml-6 w-10 h-10 lg:w-16 lg:h-16 text-white/30" />
-            </span>
-          </h1>
-          
-          <div className="max-w-lg space-y-6">
-            <p className="text-xl text-white/90 font-medium leading-relaxed drop-shadow-md border-l-4 border-accent pl-6 py-2">
-              Step into a world of boundless knowledge. Your gateway to academic excellence and research discovery starts here.
-            </p>
-          </div>
+    <div className="min-h-screen relative flex items-center bg-[#0B1221] overflow-hidden selection:bg-accent selection:text-white font-sans">
+      {/* Background Slideshow */}
+      {SLIDES.map((slide, index) => (
+        <img
+          key={index}
+          src={slide.img.src}
+          alt={slide.alt}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+            index === currentSlide ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ))}
+      
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-black/40" />
+
+      {/* Top Left Logo */}
+      <div className="absolute top-8 left-8 z-20 flex items-center">
+        <div className="text-white text-3xl font-serif font-bold tracking-widest flex items-center">
+          N
+          <div className="w-1.5 h-7 bg-[#C4A052] ml-1"></div>
         </div>
       </div>
 
-      {/* Form Side */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 bg-white relative">
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" 
-             style={{ backgroundImage: 'radial-gradient(#001F3F 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+      <div className="container mx-auto px-6 relative z-10 flex flex-col lg:flex-row justify-between items-center w-full max-w-7xl h-full py-16 lg:py-0">
         
-        <div className="w-full max-w-md space-y-10 relative z-10">
-          <div className="flex flex-col items-center">
-            <div className="p-4 bg-sidebar rounded-3xl shadow-2xl mb-6 transform -rotate-3 hover:rotate-0 transition-all duration-500 cursor-pointer group">
-              <GraduationCap className="w-10 h-10 text-accent group-hover:scale-110 transition-transform" />
-            </div>
-            <div className="space-y-2 text-center">
-              <h3 className="text-4xl font-black tracking-tighter text-sidebar uppercase">Sign In</h3>
-              <p className="text-muted-foreground font-semibold text-base">
-                Please use your <span className="text-primary font-black underline decoration-accent/50 underline-offset-4">@neu.edu.ph</span> account
-              </p>
-            </div>
+        {/* Left Content */}
+        <div className="w-full lg:w-1/2 text-white space-y-4 mb-16 lg:mb-0 lg:pr-10 flex flex-col justify-center translate-y-[-5%]">
+          <div className="text-[#C4A052] text-sm md:text-base font-semibold tracking-wider uppercase mb-2">
+            INSTITUTIONAL PORTAL
           </div>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-none uppercase tracking-tight drop-shadow-lg">
+            NEW ERA UNIVERSITY <br />
+            <span className="text-[#C4A052]">LIBRARY</span>
+            <span className="text-[#C4A052] ml-4 font-light">→</span>
+          </h1>
+          <p className="text-lg md:text-xl text-white/90 max-w-xl mt-6 font-light drop-shadow-md">
+            Step into a world of boundless knowledge. Your gateway to academic excellence and research discovery starts here.
+          </p>
+        </div>
 
-          <Card className="border-none shadow-none bg-transparent">
-            <CardContent className="p-0 space-y-6">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sidebar font-black text-[10px] uppercase tracking-[0.2em] ml-1 opacity-70">Email Address</Label>
-                  <Input
+        {/* Right Content - Glassmorphism Card */}
+        <div className="w-full max-w-md lg:w-[480px]">
+          <div className="bg-[#1a2b4b]/40 backdrop-blur-xl border border-white/20 rounded-[2rem] p-8 md:p-10 shadow-2xl relative overflow-hidden">
+            {/* Top Shine */}
+            <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+            
+            <div className="flex flex-col items-center text-center space-y-6">
+              
+              {/* Graduation Cap Icon */}
+              <div className="mb-2">
+                <svg width="72" height="72" viewBox="0 0 24 24" fill="url(#gold-gradient)" stroke="url(#gold-gradient-dark)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-[0_4px_10px_rgba(196,160,82,0.4)]">
+                  <defs>
+                    <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#DFBF78" />
+                      <stop offset="50%" stopColor="#C4A052" />
+                      <stop offset="100%" stopColor="#A28038" />
+                    </linearGradient>
+                    <linearGradient id="gold-gradient-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#8A6F31" />
+                      <stop offset="100%" stopColor="#5C471B" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M21.42 10.922a2 2 0 0 1-.019 3.838L12 18.5l-9.39-3.74a2 2 0 0 1-.019-3.838l9.36-3.78a2 2 0 0 1 1.518 0l9.36 3.78z" />
+                  <path d="M22 10v6" />
+                  <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
+                </svg>
+              </div>
+              
+              <div className="space-y-2 w-full">
+                <h2 className="text-3xl font-semibold text-white tracking-widest drop-shadow-md">SIGN IN</h2>
+                <p className="text-white/90 text-sm drop-shadow">
+                  Please use your <span className="font-semibold text-[#8eb2ef]">neu.edu.ph</span> account
+                </p>
+              </div>
+
+              <form onSubmit={handleLogin} className="w-full space-y-5 mt-2">
+                <div>
+                  <input
                     id="email"
                     type="email"
-                    placeholder="e.g. j.doe@neu.edu.ph"
+                    placeholder="e.g., j.doe@neu.edu.ph"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-14 bg-muted/20 border-2 border-transparent focus:border-primary/20 focus:bg-white transition-all text-lg px-5 rounded-2xl shadow-inner"
+                    className="w-full h-14 bg-white/10 border border-white/30 text-white placeholder:text-white/60 px-5 rounded-xl hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[#C4A052] focus:border-transparent transition-all font-light shadow-inner"
                   />
                 </div>
                 
-                <Button 
+                <button 
                   type="submit" 
-                  className="w-full h-14 bg-primary hover:bg-primary/95 text-white font-black text-lg transition-all rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/40 group overflow-hidden relative"
+                  className="w-full h-14 bg-[#0a1f3f] hover:bg-[#0c2650] text-white font-medium text-[15px] rounded-xl flex items-center justify-center transition-all shadow-lg hover:shadow-xl border border-white/10"
                   disabled={isLoading}
                 >
-                  <span className="relative z-10 flex items-center justify-center">
-                    {isLoading ? "Authenticating..." : (
-                      <>
-                        <LogIn className="w-5 h-5 mr-3 group-hover:translate-x-1 transition-transform" />
-                        Log in with G-Suite
-                      </>
-                    )}
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer" />
-                </Button>
+                  {isLoading ? "Authenticating..." : (
+                    <>
+                      <MoveRight className="w-5 h-5 mr-3" />
+                      Log in with G-Suite
+                    </>
+                  )}
+                </button>
               </form>
 
-              <div className="relative flex items-center py-4">
-                <div className="flex-grow border-t border-muted" />
-                <span className="flex-shrink mx-4 text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-50">Quick Access</span>
-                <div className="flex-grow border-t border-muted" />
+              {/* Decorative Divider */}
+              <div className="w-full flex items-center justify-center space-x-2 my-2 opacity-50">
+                <div className="h-[1px] w-full bg-gradient-to-r from-transparent to-white" />
+                <div className="w-1 h-1 rounded-full bg-white flex-shrink-0" />
+                <div className="w-[2px] h-3 bg-white flex-shrink-0" />
+                <div className="w-1 h-1 rounded-full bg-white flex-shrink-0" />
+                <div className="h-[1px] w-full bg-gradient-to-l from-transparent to-white" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Button 
-                  variant="outline" 
-                  className="h-12 border-2 border-sidebar text-sidebar hover:bg-sidebar hover:text-white font-black rounded-xl group transition-all"
+              <p className="text-white/80 text-sm font-light leading-relaxed my-4">
+                Step into a world of boundless knowledge. Your gateway to academic excellence and research discovery starts here.
+              </p>
+
+              <div className="w-full relative flex items-center py-2 text-white/60">
+                <div className="flex-grow border-t border-white/20" />
+                <span className="flex-shrink mx-4 text-xs font-light uppercase tracking-widest">QUICK ACCESS</span>
+                <div className="flex-grow border-t border-white/20" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 w-full">
+                <button 
+                  type="button"
+                  className="h-12 border border-white/30 bg-white/5 hover:bg-white/20 text-white rounded-xl flex items-center justify-center transition-all text-sm font-medium tracking-wide shadow-sm hover:shadow-md"
                   onClick={() => handleLogin(ADMIN_EMAIL)}
                   disabled={isLoading}
                 >
-                  <ShieldCheck className="w-4 h-4 mr-2 text-accent group-hover:text-white" />
+                  <svg className="w-4 h-4 mr-2 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2l8 4v6c0 5.5-3.6 10.1-8 12-4.4-1.9-8-6.5-8-12V6l8-4z"></path>
+                    <path d="M12 22a9.97 9.97 0 0 1-5.1-4m10.2 0A9.97 9.97 0 0 1 12 22"></path>
+                  </svg>
                   ADMIN
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="h-12 border-2 border-primary/20 text-primary hover:bg-primary hover:text-white font-black rounded-xl group transition-all"
+                </button>
+                <button 
+                  type="button"
+                  className="h-12 border border-white/30 bg-white/5 hover:bg-white/20 text-white rounded-xl flex items-center justify-center transition-all text-sm font-medium tracking-wide shadow-sm hover:shadow-md"
                   onClick={() => handleLogin("student.demo@neu.edu.ph")}
                   disabled={isLoading}
                 >
-                  <UserIcon className="w-4 h-4 mr-2 text-sidebar group-hover:text-white" />
+                  <svg className="w-4 h-4 mr-2 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
                   STUDENT
-                </Button>
+                </button>
               </div>
-            </CardContent>
-          </Card>
+              
+              <div className="w-full flex items-center justify-between text-white/60 text-xs mt-6 pt-5 border-t border-white/20">
+                <BookOpen className="w-5 h-5 opacity-80" />
+                <span className="tracking-widest uppercase text-[10px] md:text-xs">NEW ERA UNIVERSITY &copy; {year}</span>
+                <div className="font-serif font-bold text-xl flex items-center opacity-80">
+                  N<div className="w-0.5 h-3.5 bg-[#C4A052] ml-0.5"></div>
+                </div>
+              </div>
 
-          <div className="pt-8 flex flex-col items-center space-y-4">
-             <div className="flex items-center space-x-4 opacity-20">
-                <BookOpen className="w-5 h-5" />
-                <div className="h-4 w-[1px] bg-current" />
-                <Sparkles className="w-5 h-5" />
-             </div>
-             {year && (
-               <p className="text-[9px] font-black uppercase tracking-[0.5em] text-muted-foreground text-center opacity-40">
-                 New Era University &copy; {year}
-               </p>
-             )}
+            </div>
           </div>
         </div>
       </div>
