@@ -1,6 +1,18 @@
 "use client";
 
 import { UserRole } from "./constants";
+import { 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  addDoc, 
+  query, 
+  orderBy,
+  serverTimestamp
+} from "firebase/firestore";
+import { db } from "./firebase";
 
 export interface User {
   id: string;
@@ -22,18 +34,14 @@ export interface VisitLog {
   timestamp: string;
 }
 
-// In-memory mock store for the prototype
-let currentUser: User | null = null;
-let visitLogs: VisitLog[] = [];
-let users: User[] = [
-  {
-    id: "admin-1",
-    email: "admin@neu.edu.ph",
-    name: "Library Admin",
-    role: "Admin",
-    isBlocked: false
-  }
-];
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Firestore request timed out after ${ms}ms`)), ms)
+    )
+  ]);
+}
 
 export const mockStore = {
   getCurrentUser: () => {
@@ -48,33 +56,28 @@ export const mockStore = {
       localStorage.removeItem('neu_current_user');
     }
   },
-  getUsers: () => {
-    const stored = localStorage.getItem('neu_users');
-    return stored ? JSON.parse(stored) as User[] : users;
+  getUsers: async (): Promise<User[]> => {
+    const usersCol = collection(db, "users");
+    const snapshot = await withTimeout(getDocs(usersCol), 10000);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
   },
-  saveUser: (user: User) => {
-    const allUsers = mockStore.getUsers();
-    const index = allUsers.findIndex(u => u.id === user.id);
-    if (index > -1) {
-      allUsers[index] = user;
-    } else {
-      allUsers.push(user);
-    }
-    localStorage.setItem('neu_users', JSON.stringify(allUsers));
+  saveUser: async (user: User) => {
+    const userRef = doc(db, "users", user.id);
+    await withTimeout(setDoc(userRef, user, { merge: true }), 10000);
   },
-  getVisitLogs: () => {
-    const stored = localStorage.getItem('neu_visit_logs');
-    return stored ? JSON.parse(stored) as VisitLog[] : visitLogs;
+  getVisitLogs: async (): Promise<VisitLog[]> => {
+    const logsCol = collection(db, "visitLogs");
+    const q = query(logsCol, orderBy("timestamp", "desc"));
+    const snapshot = await withTimeout(getDocs(q), 10000);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as VisitLog));
   },
-  addVisitLog: (log: Omit<VisitLog, 'id' | 'timestamp'>) => {
-    const logs = mockStore.getVisitLogs();
-    const newLog: VisitLog = {
+  addVisitLog: async (log: Omit<VisitLog, 'id' | 'timestamp'>) => {
+    const logsCol = collection(db, "visitLogs");
+    const newLogData = {
       ...log,
-      id: Math.random().toString(36).substring(7),
       timestamp: new Date().toISOString()
     };
-    logs.push(newLog);
-    localStorage.setItem('neu_visit_logs', JSON.stringify(logs));
-    return newLog;
+    const docRef = await withTimeout(addDoc(logsCol, newLogData), 10000);
+    return { id: docRef.id, ...newLogData } as VisitLog;
   }
 };

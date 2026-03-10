@@ -32,30 +32,34 @@ export default function AdminDashboard() {
   const [recentLogs, setRecentLogs] = useState<VisitLog[]>([]);
 
   useEffect(() => {
-    const logs = mockStore.getVisitLogs();
-    const today = new Date().toISOString().split('T')[0];
-    const todayLogs = logs.filter(l => l.timestamp.startsWith(today));
+    const fetchAndProcessLogs = async () => {
+      const logs = await mockStore.getVisitLogs();
+      const today = new Date().toISOString().split('T')[0];
+      const todayLogs = logs.filter(l => l.timestamp.startsWith(today));
 
-    // Stats calculation
-    const collegeCounts: Record<string, number> = {};
-    const reasonCounts: Record<string, number> = {};
+      // Stats calculation
+      const collegeCounts: Record<string, number> = {};
+      const reasonCounts: Record<string, number> = {};
+      
+      todayLogs.forEach(log => {
+        collegeCounts[log.collegeOrOffice] = (collegeCounts[log.collegeOrOffice] || 0) + 1;
+        reasonCounts[log.reason] = (reasonCounts[log.reason] || 0) + 1;
+      });
+
+      const topCollege = Object.entries(collegeCounts).sort((a,b) => b[1] - a[1])[0]?.[0] || "No Data";
+      const topReason = Object.entries(reasonCounts).sort((a,b) => b[1] - a[1])[0]?.[0] || "No Data";
+
+      setStats({
+        totalToday: todayLogs.length,
+        peakHour: "10:00 AM - 12:00 PM", // Mock peak
+        topCollege,
+        topReason
+      });
+
+      setRecentLogs(todayLogs.slice(-10).reverse());
+    };
     
-    todayLogs.forEach(log => {
-      collegeCounts[log.collegeOrOffice] = (collegeCounts[log.collegeOrOffice] || 0) + 1;
-      reasonCounts[log.reason] = (reasonCounts[log.reason] || 0) + 1;
-    });
-
-    const topCollege = Object.entries(collegeCounts).sort((a,b) => b[1] - a[1])[0]?.[0] || "No Data";
-    const topReason = Object.entries(reasonCounts).sort((a,b) => b[1] - a[1])[0]?.[0] || "No Data";
-
-    setStats({
-      totalToday: todayLogs.length,
-      peakHour: "10:00 AM - 12:00 PM", // Mock peak
-      topCollege,
-      topReason
-    });
-
-    setRecentLogs(todayLogs.slice(-10).reverse());
+    fetchAndProcessLogs();
   }, []);
 
   return (

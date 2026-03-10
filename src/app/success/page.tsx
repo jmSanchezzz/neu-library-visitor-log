@@ -15,10 +15,14 @@ export default function SuccessPage() {
 
   useEffect(() => {
     // Set initial data
-    const logs = mockStore.getVisitLogs();
-    if (logs.length > 0) {
-      setLastLog(logs[logs.length - 1]);
-    }
+    const fetchLogs = async () => {
+      const logs = await mockStore.getVisitLogs();
+      if (logs.length > 0) {
+        setLastLog(logs[0]); // It returns order by desc now, so [0] is the latest
+      }
+    };
+    fetchLogs();
+
     setCurrentTime(new Date());
 
     // Update clock

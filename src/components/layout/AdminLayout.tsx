@@ -6,7 +6,6 @@ import {
   LayoutDashboard, 
   FileText, 
   Users, 
-  BarChart3, 
   LogOut,
   GraduationCap
 } from "lucide-react";
@@ -18,7 +17,6 @@ const NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
   { label: "Visit Reports", icon: FileText, href: "/admin/reports" },
   { label: "User Access", icon: Users, href: "/admin/users" },
-  { label: "AI Analytics", icon: BarChart3, href: "/admin/analytics" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

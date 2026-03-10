@@ -23,17 +23,32 @@ export default function UsersManagementPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    setUsersList(mockStore.getUsers());
-  }, []);
+    const fetchUsers = async () => {
+      try {
+        const users = await mockStore.getUsers();
+        setUsersList(users);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load users. Check Firestore permissions.",
+          variant: "destructive"
+        });
+      }
+    };
+    
+    fetchUsers();
+  }, [toast]);
 
   const filteredUsers = usersList.filter(u => 
-    u.name.toLowerCase().includes(search.toLowerCase()) || 
-    u.email.toLowerCase().includes(search.toLowerCase())
+    u.role !== "Admin" &&
+    (u.name.toLowerCase().includes(search.toLowerCase()) || 
+    u.email.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const toggleBlockStatus = (user: User) => {
+  const toggleBlockStatus = async (user: User) => {
     const updatedUser = { ...user, isBlocked: !user.isBlocked };
-    mockStore.saveUser(updatedUser);
+    await mockStore.saveUser(updatedUser);
     
     // Refresh local state
     const updatedList = usersList.map(u => u.id === user.id ? updatedUser : u);

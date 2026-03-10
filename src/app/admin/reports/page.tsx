@@ -47,9 +47,13 @@ export default function ReportsPage() {
   const [endDate, setEndDate] = useState<Date | undefined>();
 
   useEffect(() => {
-    const allLogs = mockStore.getVisitLogs();
-    setLogs(allLogs);
-    setFilteredLogs([...allLogs].reverse());
+    const fetchLogs = async () => {
+      const allLogs = await mockStore.getVisitLogs();
+      setLogs(allLogs);
+      setFilteredLogs([...allLogs].reverse());
+    };
+    
+    fetchLogs();
   }, []);
 
   useEffect(() => {

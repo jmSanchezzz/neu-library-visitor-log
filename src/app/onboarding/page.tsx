@@ -49,7 +49,7 @@ export default function OnboardingPage() {
     return () => clearInterval(slideTimer);
   }, [router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!college || !reason) {
       toast({
@@ -62,11 +62,11 @@ export default function OnboardingPage() {
 
     // Update user profile
     const updatedUser = { ...user, collegeOrOffice: college };
-    mockStore.saveUser(updatedUser);
+    await mockStore.saveUser(updatedUser);
     mockStore.setCurrentUser(updatedUser);
 
     // Log the initial visit
-    mockStore.addVisitLog({
+    await mockStore.addVisitLog({
       userId: user.id,
       userName: user.name,
       userEmail: user.email,

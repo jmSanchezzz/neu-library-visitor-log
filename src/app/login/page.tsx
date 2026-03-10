@@ -40,7 +40,7 @@ export default function LoginPage() {
     return () => clearInterval(slideTimer);
   }, []);
 
-  const handleLogin = (e: React.FormEvent | string) => {
+  const handleLogin = async (e: React.FormEvent | string) => {
     if (typeof e !== 'string') e.preventDefault();
     const loginEmail = typeof e === 'string' ? e : email;
     
@@ -61,37 +61,47 @@ export default function LoginPage() {
     else if (loginEmail.includes("faculty")) role = "Faculty";
     else if (loginEmail.includes("emp")) role = "Employee";
 
-    const existingUsers = mockStore.getUsers();
-    const user = existingUsers.find(u => u.email === loginEmail);
+    try {
+      const existingUsers = await mockStore.getUsers();
+      const user = existingUsers.find(u => u.email === loginEmail);
 
-    if (user?.isBlocked) {
-      router.push("/denied");
-      return;
-    }
-
-    const newUser: User = user || {
-      id: Math.random().toString(36).substring(7),
-      email: loginEmail,
-      name: loginEmail.split("@")[0].replace(".", " "),
-      role,
-      isBlocked: false
-    };
-
-    if (!user) {
-      mockStore.saveUser(newUser);
-    }
-
-    mockStore.setCurrentUser(newUser);
-
-    setTimeout(() => {
-      if (newUser.role === "Admin") {
-        router.push("/admin/dashboard");
-      } else if (!newUser.collegeOrOffice) {
-        router.push("/onboarding");
-      } else {
-        router.push("/log-visit");
+      if (user?.isBlocked) {
+        router.push("/denied");
+        return;
       }
-    }, 800);
+
+      const newUser: User = user || {
+        id: Math.random().toString(36).substring(7),
+        email: loginEmail,
+        name: loginEmail.split("@")[0].replace(".", " "),
+        role,
+        isBlocked: false
+      };
+
+      if (!user) {
+        await mockStore.saveUser(newUser);
+      }
+
+      mockStore.setCurrentUser(newUser);
+
+      setTimeout(() => {
+        if (newUser.role === "Admin") {
+          router.push("/admin/dashboard");
+        } else if (!newUser.collegeOrOffice) {
+          router.push("/onboarding");
+        } else {
+          router.push("/log-visit");
+        }
+      }, 800);
+    } catch (error) {
+      console.error("Login failed:", error);
+      toast({
+        title: "Login Failed",
+        description: "Could not connect to the database. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
   };
 
   if (!mounted) return null;

@@ -58,11 +58,11 @@ export default function LogVisitPage() {
     return () => clearInterval(slideTimer);
   }, [router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reason) return;
 
-    mockStore.addVisitLog({
+    await mockStore.addVisitLog({
       userId: user.id,
       userName: user.name,
       userEmail: user.email,
