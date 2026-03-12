@@ -22,7 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { COLLEGES, REASONS } from "@/lib/constants";
+import { COLLEGES, OFFICES, REASONS } from "@/lib/constants";
 import { mockStore, VisitLog } from "@/lib/store";
 import { 
   Download, 
@@ -181,7 +181,11 @@ export default function ReportsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Departments</SelectItem>
+                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Academic Colleges</div>
                   {COLLEGES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  <div className="mx-2 my-1 border-t" />
+                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Administrative Offices</div>
+                  {OFFICES.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

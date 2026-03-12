@@ -1,4 +1,5 @@
 export const COLLEGES = [
+  // Academic Colleges & Schools
   "School of Graduate Studies",
   "College of Law",
   "College of Medicine",
@@ -19,6 +20,27 @@ export const COLLEGES = [
   "College of Physical Therapy",
   "College of Respiratory Therapy",
   "School of International Relations"
+] as const;
+
+export const OFFICES = [
+  // Administrative Offices (Faculty & Employees)
+  "Office of the President",
+  "Office of the Vice President for Academic Affairs",
+  "Office of the Vice President for Administration",
+  "Office of the Registrar",
+  "Human Resources Office",
+  "Finance and Accounting Office",
+  "Library Services",
+  "Information Technology Office",
+  "Student Affairs and Services Office",
+  "Research and Development Office",
+  "Guidance and Counseling Office",
+  "Campus Ministry Office",
+  "Property and Procurement Office",
+  "Security and Safety Office",
+  "Medical and Dental Clinic",
+  "Public Relations and Communications Office",
+  "Admissions Office"
 ] as const;
 
 export const REASONS = [

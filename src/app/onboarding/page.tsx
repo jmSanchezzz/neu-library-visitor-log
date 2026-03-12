@@ -11,27 +11,37 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { COLLEGES, REASONS } from "@/lib/constants";
+import { COLLEGES, OFFICES, REASONS } from "@/lib/constants";
 import { mockStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 
 // Static imports for institutional photos
 import heroImg1 from '../login/pics/login_library.jpg';
 import heroImg3 from '../login/pics/login_library3.jpg';
+import heroImg4 from '../login/pics/logVisit_library1.jpg';
+import heroImg5 from '../login/pics/logVisit_library2.jpg';
+import heroImg6 from '../login/pics/logVisit_library3.jpg';
 
 const SLIDES = [
   { img: heroImg1, alt: "NEU Library Main Entrance" },
-  { img: heroImg3, alt: "NEU Library Research Area" }
+  { img: heroImg3, alt: "NEU Library Research Area" },
+  { img: heroImg4, alt: "NEU Library Study Area 1" },
+  { img: heroImg5, alt: "NEU Library Study Area 2" },
+  { img: heroImg6, alt: "NEU Library Study Area 3" }
 ];
 
 export default function OnboardingPage() {
   const [college, setCollege] = useState("");
   const [reason, setReason] = useState("");
+  const [selectedRole, setSelectedRole] = useState<"Faculty" | "Employee" | "">("");
   const [user, setUser] = useState<any>(null);
   const [mounted, setMounted] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const router = useRouter();
   const { toast } = useToast();
+
+  // Staff emails have no dot in the local part (e.g. jcesperanza@neu.edu.ph)
+  const isStaff = (email: string) => !email.split("@")[0].includes(".");
 
   useEffect(() => {
     setMounted(true);
@@ -51,17 +61,24 @@ export default function OnboardingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!college || !reason) {
+    const staffEmail = user && isStaff(user.email);
+    if (!college || !reason || (staffEmail && !selectedRole)) {
       toast({
         title: "Information Required",
-        description: "Please select both your department and reason for visiting.",
+        description: staffEmail
+          ? "Please select your role, department, and reason for visiting."
+          : "Please select both your department and reason for visiting.",
         variant: "destructive"
       });
       return;
     }
 
-    // Update user profile
-    const updatedUser = { ...user, collegeOrOffice: college };
+    // Determine final role:
+    // - Staff emails: use selectedRole chosen in this form
+    // - Student emails: always Student
+    const isStaffEmail = isStaff(user.email);
+    const updatedRole = isStaffEmail ? selectedRole : "Student";
+    const updatedUser = { ...user, collegeOrOffice: college, role: updatedRole };
     await mockStore.saveUser(updatedUser);
     mockStore.setCurrentUser(updatedUser);
 
@@ -70,7 +87,7 @@ export default function OnboardingPage() {
       userId: user.id,
       userName: user.name,
       userEmail: user.email,
-      userRole: user.role,
+      userRole: updatedRole,
       collegeOrOffice: college,
       reason: reason
     });
@@ -152,6 +169,32 @@ export default function OnboardingPage() {
 
               <form onSubmit={handleSubmit} className="w-full space-y-5 mt-2 text-left">
                 <div className="space-y-5">
+                  {/* Role selector — only shown for staff emails (no dot) */}
+                  {isStaff(user.email) && (
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 ml-1 flex items-center">
+                        <Building2 className="w-3 h-3 mr-2" />
+                        I am a...
+                      </Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {(["Faculty", "Employee"] as const).map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => { setSelectedRole(r); setCollege(""); }}
+                            className={`h-12 rounded-xl border text-sm font-medium tracking-wide transition-all ${
+                              selectedRole === r
+                                ? "bg-[#C4A052]/20 border-[#C4A052] text-[#DFBF78]"
+                                : "bg-white/5 border-white/20 text-white hover:bg-white/10"
+                            }`}
+                          >
+                            {r}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <Label htmlFor="college" className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 ml-1 flex items-center">
                       <Building2 className="w-3 h-3 mr-2" />
@@ -162,15 +205,19 @@ export default function OnboardingPage() {
                         <SelectValue placeholder="Select college or office" />
                       </SelectTrigger>
                       <SelectContent className="bg-[#0a192f] border-white/10 text-white rounded-xl shadow-2xl max-h-[300px]">
-                        {COLLEGES.map((c) => (
-                          <SelectItem 
-                            key={c} 
-                            value={c} 
-                            className="py-3 px-5 focus:bg-[#C4A052]/20 focus:text-white cursor-pointer font-medium"
-                          >
-                            {c}
-                          </SelectItem>
-                        ))}
+                        {selectedRole === "Employee" ? (
+                          OFFICES.map((o) => (
+                            <SelectItem key={o} value={o} className="py-3 px-5 focus:bg-[#C4A052]/20 focus:text-white cursor-pointer font-medium">
+                              {o}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          COLLEGES.map((c) => (
+                            <SelectItem key={c} value={c} className="py-3 px-5 focus:bg-[#C4A052]/20 focus:text-white cursor-pointer font-medium">
+                              {c}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -202,7 +249,7 @@ export default function OnboardingPage() {
                 <button 
                   type="submit" 
                   className="w-full h-14 mt-6 bg-[#0a1f3f] hover:bg-[#0c2650] text-white font-medium text-[15px] rounded-xl flex items-center justify-center transition-all shadow-lg hover:shadow-xl border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed group"
-                  disabled={!college || !reason}
+                  disabled={!college || !reason || (isStaff(user.email) && !selectedRole)}
                 >
                   Proceed to Library
                   <ChevronRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />

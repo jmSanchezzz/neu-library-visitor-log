@@ -1,76 +1,168 @@
 # NEU Library Visitor Log
 
-![Next.js](https://img.shields.io/badge/Next.js-15.5-black?style=for-the-badge&logo=next.js)
-![React](https://img.shields.io/badge/React-19.0-blue?style=for-the-badge&logo=react)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
-![Genkit](https://img.shields.io/badge/Genkit-AI_Analysis-orange?style=for-the-badge)
-![ShadCN UI](https://img.shields.io/badge/ShadCN_UI-Components-black?style=for-the-badge)
+NEU Library Visitor Log is a kiosk-oriented visitor management system for New Era University Library. It is built with Next.js, React, Tailwind CSS, shadcn/ui, and Firebase Firestore.
 
-A high-fidelity visitor management system designed for **New Era University Library**. This application streamlines the check-in process for students, faculty, and employees while providing administrators with powerful AI-driven insights and comprehensive reporting tools.
+The system is designed for fast shared-device usage: visitors enter their institutional email, complete onboarding if needed, select their reason for visiting, and the visit is saved immediately. Administrators can review recent check-ins, filter visit reports, export CSV data, and manage user access.
 
-## 🚀 Key Features
+## Overview
 
-### 🏫 Institutional Portal
-- **Domain-Restricted Authentication:** Secure login exclusive to `@neu.edu.ph` institutional accounts.
-- **Dynamic Onboarding:** Profile completion for first-time visitors to capture department and affiliation.
-- **Seamless Check-in:** Intuitive interface for logging visit purposes (Research, Studying, Meetings, etc.).
+### Visitor Flow
 
-### 🛡️ Administrative Console
-- **Real-time Dashboard:** Live tracking of daily visitors, peak hours, and top-performing departments.
-- **AI Trend Analysis:** Powered by **Google Genkit**, providing automated textual summaries of historical usage patterns and hidden trends.
-- **Advanced Reporting:** Comprehensive logs with multi-parameter filtering (Date Range, Role, Department) and **CSV Export** functionality.
-- **Access Control:** Centralized user management with the ability to restrict or block access in real-time.
+- Email-based sign-in restricted to `@neu.edu.ph`
+- First-time onboarding for role and department or office selection
+- Visit logging with predefined reasons
+- Returning users can go directly to the visit logging screen
+- Blocked users are redirected to an access denied page
 
-### 🎨 Design & UX
-- **Cinematic Interface:** Modern dark-navy and gold aesthetic matching institutional branding.
-- **Glassmorphism UI:** Sophisticated translucent cards and backdrop blur effects.
-- **Responsive Layout:** Fully optimized for desktop kiosks and mobile devices.
+### Role Logic
 
-## 🛠️ Tech Stack
+- `admin@neu.edu.ph` is treated as the administrator account
+- Student emails follow the pattern `firstname.lastname@neu.edu.ph`
+- Staff emails typically have no dot in the local part
+- Staff users complete role selection during onboarding:
+   - `Faculty` selects from academic colleges
+   - `Employee` selects from administrative offices
 
-- **Framework:** [Next.js 15 (App Router)](https://nextjs.org/)
-- **UI Library:** [React 19](https://react.dev/) with [ShadCN UI](https://ui.shadcn.com/)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-- **AI Engine:** [Google Genkit](https://github.com/firebase/genkit) (Gemini 2.5 Flash)
-- **Icons:** [Lucide React](https://lucide.dev/)
-- **Date Handling:** [date-fns](https://date-fns.org/)
-- **State/Store:** Mock In-Memory Store with LocalStorage Persistence
+### Admin Features
 
-## 📦 Setup & Installation
+- Dashboard with recent check-ins and live activity summaries
+- Reports page with filters for:
+   - user role
+   - college or office
+   - visit reason
+   - date range
+- CSV export for filtered reports
+- User management with block and unblock controls
 
-Follow these steps to get the project running locally:
+### UI
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/johnmarcsanchez/neu-library-visitor-log.git
-   cd neu-library-visitor-log
-   ```
+- Full-screen slideshow backgrounds on login, onboarding, and visit logging pages
+- Glassmorphism card layout
+- Responsive layout suitable for kiosk and desktop use
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+## Current Authentication Model
 
-3. **Environment Configuration:**
-   Create a `.env` file in the root directory and add your Gemini API Key:
-   ```env
-   GOOGLE_GENAI_API_KEY=your_api_key_here
-   ```
+This project does not currently use Google Sign-In or password-based authentication.
 
-4. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
+- A user can enter any email ending in `@neu.edu.ph`
+- The app does not verify whether that email is an existing Google account
+- If the email is not yet stored, a user record is created in Firestore
+- This behavior is intentional for faster shared-kiosk usage
 
-5. **Open the application:**
-   Navigate to [http://localhost:9002](http://localhost:9002) in your browser.
+For this project’s current use case, the login flow prioritizes speed over strict identity verification.
 
-## ✒️ Author
+## Tech Stack
 
-**John Marc Sanchez**
-- GitHub: [@johnmarcsanchez](https://github.com/johnmarcsanchez)
-- Project: NEU Library Visitor Log
+- Next.js 15 App Router
+- React 19
+- TypeScript
+- Tailwind CSS
+- shadcn/ui components
+- Firebase Firestore
+- date-fns
+- Lucide React
 
----
-*Built with passion for the NEU Community.*
+## Project Structure
+
+```text
+src/
+   app/
+      login/                Email entry
+      onboarding/           First-time role and department setup
+      log-visit/            Returning user visit logging
+      success/              Post-check-in confirmation
+      denied/               Blocked user screen
+      admin/
+         dashboard/          Admin summary page
+         reports/            Filterable reports and CSV export
+         users/              User management
+   components/
+      layout/               Admin layout shell
+      ui/                   Reusable UI primitives
+   lib/
+      constants.ts          Roles, colleges, offices, visit reasons
+      firebase.ts           Firestore initialization
+      store.ts              Firestore-backed data helpers
+```
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18 or later
+- npm
+- Access to the configured Firebase project
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Run Locally
+
+```bash
+npm run dev
+```
+
+The development server runs on:
+
+```text
+http://localhost:9002
+```
+
+## Available Scripts
+
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+npm run typecheck
+```
+
+The repository also includes Genkit-related scripts in `package.json`, but the current visitor logging and admin flows documented here are based on the app’s Firestore-backed implementation.
+
+## Data Stored
+
+### User Records
+
+User documents contain:
+
+- `id`
+- `email`
+- `name`
+- `role`
+- `collegeOrOffice`
+- `isBlocked`
+
+### Visit Logs
+
+Visit log documents contain:
+
+- `userId`
+- `userName`
+- `userEmail`
+- `userRole`
+- `collegeOrOffice`
+- `reason`
+- `timestamp`
+
+## Onboarding Rules
+
+- New users are routed to onboarding after first login
+- Students select from academic colleges
+- Staff users first choose either `Faculty` or `Employee`
+- Faculty users select from academic colleges
+- Employee users select from administrative offices
+- After onboarding, the first visit log is created immediately
+
+## Deployment Notes
+
+- Firebase configuration is currently defined in `src/lib/firebase.ts`
+- If you switch Firebase projects, update that file first
+- Before production rollout, review Firestore security rules and remove any demo shortcuts you do not want exposed
+
+## Author
+
+John Marc Sanchez

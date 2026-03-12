@@ -14,10 +14,16 @@ import { useToast } from "@/hooks/use-toast";
 // Static imports for institutional photos
 import heroImg1 from './pics/login_library.jpg';
 import heroImg3 from './pics/login_library3.jpg';
+import heroImg4 from './pics/logVisit_library1.jpg';
+import heroImg5 from './pics/logVisit_library2.jpg';
+import heroImg6 from './pics/logVisit_library3.jpg';
 
 const SLIDES = [
   { img: heroImg1, alt: "NEU Library Main Entrance" },
-  { img: heroImg3, alt: "NEU Library Research Area" }
+  { img: heroImg3, alt: "NEU Library Research Area" },
+  { img: heroImg4, alt: "NEU Library Study Area 1" },
+  { img: heroImg5, alt: "NEU Library Study Area 2" },
+  { img: heroImg6, alt: "NEU Library Study Area 3" }
 ];
 
 export default function LoginPage() {
@@ -56,10 +62,12 @@ export default function LoginPage() {
       return;
     }
 
+    // Dot in local part → Student format (firstname.lastname)
+    // No dot → Staff format (initialssurname), role resolved during onboarding
+    const localPart = loginEmail.split("@")[0];
     let role: UserRole = "Student";
     if (loginEmail === ADMIN_EMAIL) role = "Admin";
-    else if (loginEmail.includes("faculty")) role = "Faculty";
-    else if (loginEmail.includes("emp")) role = "Employee";
+    else if (!localPart.includes(".")) role = "Faculty"; // placeholder, corrected in onboarding
 
     try {
       const existingUsers = await mockStore.getUsers();

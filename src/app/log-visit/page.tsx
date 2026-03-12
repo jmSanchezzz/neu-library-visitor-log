@@ -21,10 +21,16 @@ import { mockStore } from "@/lib/store";
 // Static imports for institutional photos
 import heroImg1 from '../login/pics/login_library.jpg';
 import heroImg3 from '../login/pics/login_library3.jpg';
+import heroImg4 from '../login/pics/logVisit_library1.jpg';
+import heroImg5 from '../login/pics/logVisit_library2.jpg';
+import heroImg6 from '../login/pics/logVisit_library3.jpg';
 
 const SLIDES = [
   { img: heroImg1, alt: "NEU Library Main Entrance" },
-  { img: heroImg3, alt: "NEU Library Research Area" }
+  { img: heroImg3, alt: "NEU Library Research Area" },
+  { img: heroImg4, alt: "NEU Library Study Area 1" },
+  { img: heroImg5, alt: "NEU Library Study Area 2" },
+  { img: heroImg6, alt: "NEU Library Study Area 3" }
 ];
 
 const REASON_ICONS: Record<string, any> = {
