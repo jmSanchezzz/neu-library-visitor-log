@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { COLLEGES, OFFICES, REASONS } from "@/lib/constants";
 import { mockStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
+import type { UserRole } from "@/lib/constants";
 
 // Static imports for institutional photos
 import heroImg1 from '../login/pics/login_library.jpg';
@@ -45,18 +46,28 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     setMounted(true);
-    const currentUser = mockStore.getCurrentUser();
-    if (!currentUser) {
-      router.push("/login");
-    } else {
+    const unsubscribe = mockStore.onCurrentUserChange((currentUser) => {
+      if (!currentUser) {
+        router.push("/login");
+        return;
+      }
+
+      if (currentUser.isBlocked) {
+        router.push("/denied");
+        return;
+      }
+
       setUser(currentUser);
-    }
+    });
 
     const slideTimer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
     }, 6000);
     
-    return () => clearInterval(slideTimer);
+    return () => {
+      unsubscribe();
+      clearInterval(slideTimer);
+    };
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,7 +88,7 @@ export default function OnboardingPage() {
     // - Staff emails: use selectedRole chosen in this form
     // - Student emails: always Student
     const isStaffEmail = isStaff(user.email);
-    const updatedRole = isStaffEmail ? selectedRole : "Student";
+    const updatedRole: UserRole = isStaffEmail ? selectedRole as "Faculty" | "Employee" : "Student";
     const updatedUser = { ...user, collegeOrOffice: college, role: updatedRole };
     await mockStore.saveUser(updatedUser);
     mockStore.setCurrentUser(updatedUser);

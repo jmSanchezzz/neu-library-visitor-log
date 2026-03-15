@@ -50,18 +50,28 @@ export default function LogVisitPage() {
 
   useEffect(() => {
     setMounted(true);
-    const currentUser = mockStore.getCurrentUser();
-    if (!currentUser) {
-      router.push("/login");
-    } else {
+    const unsubscribe = mockStore.onCurrentUserChange((currentUser) => {
+      if (!currentUser) {
+        router.push("/login");
+        return;
+      }
+
+      if (currentUser.isBlocked) {
+        router.push("/denied");
+        return;
+      }
+
       setUser(currentUser);
-    }
+    });
 
     const slideTimer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
     }, 6000);
     
-    return () => clearInterval(slideTimer);
+    return () => {
+      unsubscribe();
+      clearInterval(slideTimer);
+    };
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {

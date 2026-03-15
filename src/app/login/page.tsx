@@ -1,14 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { LogIn, GraduationCap, ShieldCheck, User as UserIcon, BookOpen, Sparkles, MoveRight } from "lucide-react";
-import { ALLOWED_DOMAIN, ADMIN_EMAIL, UserRole } from "@/lib/constants";
-import { mockStore, User } from "@/lib/store";
+import { BookOpen, MoveRight } from "lucide-react";
+import { ADMIN_EMAIL, UserRole } from "@/lib/constants";
+import { mockStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 
 // Static imports for institutional photos
@@ -27,87 +23,168 @@ const SLIDES = [
 ];
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [year, setYear] = useState<number | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+  const bootstrapAdminEmail = "johnmarc.sanchez@neu.edu.ph";
+  const prototypeStudentEmail = "student.demo@neu.edu.ph";
+  const loadingResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearLoadingResetTimer = () => {
+    if (loadingResetTimerRef.current) {
+      clearTimeout(loadingResetTimerRef.current);
+      loadingResetTimerRef.current = null;
+    }
+  };
+
+  const resolveLoginErrorMessage = (error: unknown) => {
+    if (typeof error === "object" && error !== null && "code" in error) {
+      const firebaseCode = String((error as { code?: string }).code || "");
+
+      if (firebaseCode === "auth/configuration-not-found") {
+        return "Firebase Authentication is not fully configured. Enable Authentication and Google sign-in in Firebase Console.";
+      }
+
+      if (firebaseCode === "auth/operation-not-allowed") {
+        return "Google sign-in is disabled for this Firebase project. Enable it in Authentication > Sign-in method.";
+      }
+
+      if (firebaseCode === "auth/popup-blocked") {
+        return "The sign-in popup was blocked by the browser. Allow popups and try again.";
+      }
+
+      if (firebaseCode === "auth/popup-closed-by-user") {
+        return "Google sign-in was canceled.";
+      }
+    }
+
+    return error instanceof Error
+      ? error.message
+      : "Could not connect to Firebase Authentication. Please try again.";
+  };
 
   useEffect(() => {
     setMounted(true);
     setYear(new Date().getFullYear());
+
+    const unsubscribe = mockStore.onCurrentUserChange((currentUser) => {
+      if (!currentUser) return;
+
+      if (currentUser.isBlocked) {
+        router.push("/denied");
+        return;
+      }
+
+      if (currentUser.role === "Admin") {
+        router.push("/admin/dashboard");
+      } else if (!currentUser.collegeOrOffice) {
+        router.push("/onboarding");
+      } else {
+        router.push("/log-visit");
+      }
+    });
     
     const slideTimer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
     }, 6000);
     
-    return () => clearInterval(slideTimer);
-  }, []);
+    return () => {
+      unsubscribe();
+      clearInterval(slideTimer);
+      clearLoadingResetTimer();
+    };
+  }, [router]);
 
-  const handleLogin = async (e: React.FormEvent | string) => {
-    if (typeof e !== 'string') e.preventDefault();
-    const loginEmail = typeof e === 'string' ? e : email;
-    
+  const handleLogin = async (options?: { roleHint?: UserRole; requireAdmin?: boolean }) => {
+    clearLoadingResetTimer();
     setIsLoading(true);
 
-    if (!loginEmail.endsWith(ALLOWED_DOMAIN) && loginEmail !== ADMIN_EMAIL) {
+    loadingResetTimerRef.current = setTimeout(() => {
+      setIsLoading(false);
       toast({
-        title: "Invalid Email Domain",
-        description: `Please use your institutional @neu.edu.ph account.`,
+        title: "Sign-In Timed Out",
+        description: "The Google sign-in window was closed or took too long. Please try again.",
         variant: "destructive",
       });
-      setIsLoading(false);
-      return;
-    }
-
-    // Dot in local part → Student format (firstname.lastname)
-    // No dot → Staff format (initialssurname), role resolved during onboarding
-    const localPart = loginEmail.split("@")[0];
-    let role: UserRole = "Student";
-    if (loginEmail === ADMIN_EMAIL) role = "Admin";
-    else if (!localPart.includes(".")) role = "Faculty"; // placeholder, corrected in onboarding
+    }, 20000);
 
     try {
-      const existingUsers = await mockStore.getUsers();
-      const user = existingUsers.find(u => u.email === loginEmail);
+      const user = await mockStore.signInWithGoogle(options?.roleHint);
 
-      if (user?.isBlocked) {
+      if (options?.requireAdmin && user.role !== "Admin") {
+        await mockStore.signOutCurrentUser();
+        toast({
+          title: "Admin Access Required",
+          description: `Use ${bootstrapAdminEmail} to access the admin portal.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (user.isBlocked) {
         router.push("/denied");
         return;
       }
 
-      const newUser: User = user || {
-        id: Math.random().toString(36).substring(7),
-        email: loginEmail,
-        name: loginEmail.split("@")[0].replace(".", " "),
-        role,
-        isBlocked: false
-      };
-
-      if (!user) {
-        await mockStore.saveUser(newUser);
+      if (user.role === "Admin") {
+        router.push("/admin/dashboard");
+      } else if (!user.collegeOrOffice) {
+        router.push("/onboarding");
+      } else {
+        router.push("/log-visit");
       }
-
-      mockStore.setCurrentUser(newUser);
-
-      setTimeout(() => {
-        if (newUser.role === "Admin") {
-          router.push("/admin/dashboard");
-        } else if (!newUser.collegeOrOffice) {
-          router.push("/onboarding");
-        } else {
-          router.push("/log-visit");
-        }
-      }, 800);
     } catch (error) {
       console.error("Login failed:", error);
       toast({
         title: "Login Failed",
-        description: "Could not connect to the database. Please try again.",
+        description: resolveLoginErrorMessage(error),
         variant: "destructive",
       });
+    } finally {
+      clearLoadingResetTimer();
+      setIsLoading(false);
+    }
+  };
+
+  const handlePrototypeLogin = async (email: string, options?: { roleHint?: UserRole; requireAdmin?: boolean }) => {
+    setIsLoading(true);
+
+    try {
+      const user = await mockStore.signInPrototype(email, options?.roleHint);
+
+      if (options?.requireAdmin && user.role !== "Admin") {
+        await mockStore.signOutCurrentUser();
+        toast({
+          title: "Admin Access Required",
+          description: `Use ${bootstrapAdminEmail} to access the admin portal.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (user.isBlocked) {
+        router.push("/denied");
+        return;
+      }
+
+      if (user.role === "Admin") {
+        router.push("/admin/dashboard");
+      } else if (!user.collegeOrOffice) {
+        router.push("/onboarding");
+      } else {
+        router.push("/log-visit");
+      }
+    } catch (error) {
+      console.error("Prototype login failed:", error);
+      toast({
+        title: "Prototype Access Failed",
+        description: error instanceof Error ? error.message : "Could not initialize prototype access.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -191,32 +268,21 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              <form onSubmit={handleLogin} className="w-full space-y-5 mt-2">
-                <div>
-                  <input
-                    id="email"
-                    type="email"
-                    placeholder="e.g., j.doe@neu.edu.ph"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full h-14 bg-white/10 border border-white/30 text-white placeholder:text-white/60 px-5 rounded-xl hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-[#C4A052] focus:border-transparent transition-all font-light shadow-inner"
-                  />
-                </div>
-                
+              <div className="w-full space-y-5 mt-2">
                 <button 
-                  type="submit" 
+                  type="button" 
                   className="w-full h-14 bg-[#0a1f3f] hover:bg-[#0c2650] text-white font-medium text-[15px] rounded-xl flex items-center justify-center transition-all shadow-lg hover:shadow-xl border border-white/10"
                   disabled={isLoading}
+                  onClick={() => handleLogin()}
                 >
                   {isLoading ? "Authenticating..." : (
                     <>
                       <MoveRight className="w-5 h-5 mr-3" />
-                      Log in with G-Suite
+                      Continue with Google
                     </>
                   )}
                 </button>
-              </form>
+              </div>
 
               {/* Decorative Divider */}
               <div className="w-full flex items-center justify-center space-x-2 my-2 opacity-50">
@@ -241,7 +307,7 @@ export default function LoginPage() {
                 <button 
                   type="button"
                   className="h-12 border border-white/30 bg-white/5 hover:bg-white/20 text-white rounded-xl flex items-center justify-center transition-all text-sm font-medium tracking-wide shadow-sm hover:shadow-md"
-                  onClick={() => handleLogin(ADMIN_EMAIL)}
+                  onClick={() => handlePrototypeLogin(ADMIN_EMAIL, { roleHint: "Admin", requireAdmin: true })}
                   disabled={isLoading}
                 >
                   <svg className="w-4 h-4 mr-2 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -253,7 +319,7 @@ export default function LoginPage() {
                 <button 
                   type="button"
                   className="h-12 border border-white/30 bg-white/5 hover:bg-white/20 text-white rounded-xl flex items-center justify-center transition-all text-sm font-medium tracking-wide shadow-sm hover:shadow-md"
-                  onClick={() => handleLogin("student.demo@neu.edu.ph")}
+                  onClick={() => handlePrototypeLogin(prototypeStudentEmail, { roleHint: "Student" })}
                   disabled={isLoading}
                 >
                   <svg className="w-4 h-4 mr-2 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

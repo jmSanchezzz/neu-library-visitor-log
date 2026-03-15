@@ -8,8 +8,8 @@ import { mockStore } from "@/lib/store";
 export default function DeniedPage() {
   const router = useRouter();
 
-  const handleReturn = () => {
-    mockStore.setCurrentUser(null);
+  const handleReturn = async () => {
+    await mockStore.signOutCurrentUser();
     router.push("/login");
   };
 

@@ -2,13 +2,13 @@
 
 NEU Library Visitor Log is a kiosk-oriented visitor management system for New Era University Library. It is built with Next.js, React, Tailwind CSS, shadcn/ui, and Firebase Firestore.
 
-The system is designed for fast shared-device usage: visitors enter their institutional email, complete onboarding if needed, select their reason for visiting, and the visit is saved immediately. Administrators can review recent check-ins, filter visit reports, export CSV data, and manage user access.
+The system is designed for fast shared-device usage: visitors authenticate with their institutional Google account, complete onboarding if needed, select their reason for visiting, and the visit is saved immediately. Administrators can review recent check-ins, filter visit reports, export CSV data, and manage user access.
 
 ## Overview
 
 ### Visitor Flow
 
-- Email-based sign-in restricted to `@neu.edu.ph`
+- Google sign-in restricted to `@neu.edu.ph`
 - First-time onboarding for role and department or office selection
 - Visit logging with predefined reasons
 - Returning users can go directly to the visit logging screen
@@ -16,7 +16,9 @@ The system is designed for fast shared-device usage: visitors enter their instit
 
 ### Role Logic
 
-- `admin@neu.edu.ph` is treated as the administrator account
+- Admin access is driven by the Firestore `users.role` field
+- `johnmarc.sanchez@neu.edu.ph` is auto-bootstrapped as `Admin` on first login
+- Prototype quick-access actions for admin and student are still available on the login screen
 - Student emails follow the pattern `firstname.lastname@neu.edu.ph`
 - Staff emails typically have no dot in the local part
 - Staff users complete role selection during onboarding:
@@ -42,14 +44,12 @@ The system is designed for fast shared-device usage: visitors enter their instit
 
 ## Current Authentication Model
 
-This project does not currently use Google Sign-In or password-based authentication.
+This project uses Firebase Authentication with Google sign-in.
 
-- A user can enter any email ending in `@neu.edu.ph`
-- The app does not verify whether that email is an existing Google account
-- If the email is not yet stored, a user record is created in Firestore
-- This behavior is intentional for faster shared-kiosk usage
-
-For this project’s current use case, the login flow prioritizes speed over strict identity verification.
+- Users authenticate through a Google popup flow
+- Only `@neu.edu.ph` accounts are accepted
+- If a user does not exist in Firestore, a profile is created using their Firebase UID
+- User authorization (including admin access and blocked state) is resolved from Firestore user data
 
 ## Tech Stack
 
@@ -110,6 +110,18 @@ The development server runs on:
 ```text
 http://localhost:9002
 ```
+
+### Firebase Authentication Setup
+
+1. Open Firebase Console and enable Google provider in Authentication.
+2. Add localhost and production domains to authorized domains.
+3. Configure `.env.local` with Firebase client keys:
+   - `NEXT_PUBLIC_FIREBASE_API_KEY`
+   - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+   - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+   - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+   - `NEXT_PUBLIC_FIREBASE_APP_ID`
 
 ## Available Scripts
 

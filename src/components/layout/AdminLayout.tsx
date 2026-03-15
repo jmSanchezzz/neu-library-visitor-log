@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
@@ -11,7 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { mockStore } from "@/lib/store";
+import { mockStore, User } from "@/lib/store";
 
 const NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
@@ -22,11 +23,37 @@ const NAV_ITEMS = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [adminUser, setAdminUser] = useState<User | null>(null);
 
-  const handleLogout = () => {
-    mockStore.setCurrentUser(null);
+  useEffect(() => {
+    const unsubscribe = mockStore.onCurrentUserChange((currentUser) => {
+      if (!currentUser) {
+        router.push("/login");
+        return;
+      }
+
+      if (currentUser.isBlocked) {
+        router.push("/denied");
+        return;
+      }
+
+      if (currentUser.role !== "Admin") {
+        router.push("/log-visit");
+        return;
+      }
+
+      setAdminUser(currentUser);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  const handleLogout = async () => {
+    await mockStore.signOutCurrentUser();
     router.push("/login");
   };
+
+  if (!adminUser) return null;
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -87,11 +114,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium">Administrator</p>
-              <p className="text-xs text-muted-foreground">admin@neu.edu.ph</p>
+              <p className="text-sm font-medium">{adminUser.name}</p>
+              <p className="text-xs text-muted-foreground">{adminUser.email}</p>
             </div>
             <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold shadow-md">
-              A
+              {adminUser.name.charAt(0).toUpperCase()}
             </div>
           </div>
         </header>

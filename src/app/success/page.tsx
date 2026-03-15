@@ -46,8 +46,8 @@ export default function SuccessPage() {
     }, interval);
 
     // Final redirection
-    const redirectTimer = setTimeout(() => {
-      mockStore.setCurrentUser(null);
+    const redirectTimer = setTimeout(async () => {
+      await mockStore.signOutCurrentUser();
       router.push("/login");
     }, duration + 500);
 
@@ -58,8 +58,8 @@ export default function SuccessPage() {
     };
   }, [router]);
 
-  const handleReturn = () => {
-    mockStore.setCurrentUser(null);
+  const handleReturn = async () => {
+    await mockStore.signOutCurrentUser();
     router.push("/login");
   };
 
