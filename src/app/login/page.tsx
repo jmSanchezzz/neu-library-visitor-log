@@ -299,7 +299,7 @@ export default function LoginPage() {
 
               <div className="w-full relative flex items-center py-2 text-white/60">
                 <div className="flex-grow border-t border-white/20" />
-                <span className="flex-shrink mx-4 text-xs font-light uppercase tracking-widest">QUICK ACCESS</span>
+                <span className="flex-shrink mx-4 text-xs font-light uppercase tracking-widest">PROTOTYPE ACCESS</span>
                 <div className="flex-grow border-t border-white/20" />
               </div>
 
