@@ -1,5 +1,5 @@
 # NEU Library Visitor Log
-
+  
 NEU Library Visitor Log is a kiosk-oriented visitor management system for New Era University Library. It is built with Next.js, React, Tailwind CSS, shadcn/ui, and Firebase Firestore.
 
 The system is designed for fast shared-device usage: visitors authenticate with their institutional Google account, complete onboarding if needed, select their reason for visiting, and the visit is saved immediately. Administrators can review recent check-ins, filter visit reports, export CSV data, and manage user access.
