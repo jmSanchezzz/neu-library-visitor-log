@@ -42,8 +42,10 @@ export interface VisitLog {
 const CURRENT_USER_KEY = "neu_current_user";
 const SESSION_MODE_KEY = "neu_session_mode";
 type SessionMode = "firebase" | "prototype";
+const RECENT_SYNC_WINDOW_MS = 30000;
 
 const ADMIN_EMAIL_SET = new Set(ADMIN_EMAILS.map((email) => email.toLowerCase()));
+const recentFirebaseSyncByUid = new Map<string, number>();
 
 function toFirestoreUser(user: User): Record<string, unknown> {
   return {
@@ -80,6 +82,16 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   ]);
 }
 
+function markUserSynced(uid: string) {
+  recentFirebaseSyncByUid.set(uid, Date.now());
+}
+
+function wasUserRecentlySynced(uid: string): boolean {
+  const lastSyncedAt = recentFirebaseSyncByUid.get(uid);
+  if (!lastSyncedAt) return false;
+  return Date.now() - lastSyncedAt < RECENT_SYNC_WINDOW_MS;
+}
+
 export const mockStore = {
   getCurrentUser: () => {
     if (typeof window === 'undefined') return null;
@@ -96,7 +108,9 @@ export const mockStore = {
   signInWithGoogle: async (roleHint?: UserRole): Promise<User> => {
     const result = await signInWithPopup(auth, googleProvider);
     setSessionMode("firebase");
-    return mockStore.syncUserFromAuth(result.user, roleHint);
+    const user = await mockStore.syncUserFromAuth(result.user, roleHint);
+    markUserSynced(result.user.uid);
+    return user;
   },
   signInPrototype: async (email: string, roleHint?: UserRole): Promise<User> => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -168,7 +182,18 @@ export const mockStore = {
       isBlocked: existingUser?.isBlocked ?? false
     };
 
-    await withTimeout(setDoc(userRef, toFirestoreUser(mergedUser), { merge: true }), 10000);
+    const shouldPersistUser = !existingUser ||
+      existingUser.email !== mergedUser.email ||
+      existingUser.name !== mergedUser.name ||
+      existingUser.role !== mergedUser.role ||
+      existingUser.collegeOrOffice !== mergedUser.collegeOrOffice ||
+      (existingUser.isBlocked ?? false) !== (mergedUser.isBlocked ?? false);
+
+    if (shouldPersistUser) {
+      await withTimeout(setDoc(userRef, toFirestoreUser(mergedUser), { merge: true }), 10000);
+    }
+
+    markUserSynced(firebaseUser.uid);
     mockStore.setCurrentUser(mergedUser);
     return mergedUser;
   },
@@ -197,6 +222,15 @@ export const mockStore = {
       }
 
       try {
+        if (wasUserRecentlySynced(firebaseUser.uid)) {
+          const cachedUser = mockStore.getCurrentUser();
+          if (cachedUser && cachedUser.id === firebaseUser.uid) {
+            setSessionMode("firebase");
+            onChange(cachedUser);
+            return;
+          }
+        }
+
         const user = await mockStore.syncUserFromAuth(firebaseUser);
         setSessionMode("firebase");
         onChange(user);

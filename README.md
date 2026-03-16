@@ -1,180 +1,60 @@
 # NEU Library Visitor Log
-  
-NEU Library Visitor Log is a kiosk-oriented visitor management system for New Era University Library. It is built with Next.js, React, Tailwind CSS, shadcn/ui, and Firebase Firestore.
 
-The system is designed for fast shared-device usage: visitors authenticate with their institutional Google account, complete onboarding if needed, select their reason for visiting, and the visit is saved immediately. Administrators can review recent check-ins, filter visit reports, export CSV data, and manage user access.
+This project was developed for the Software Engineering 2 course to modernize the New Era University Library's entry process. It replaces the traditional manual pen-and-paper logbook with a secure, kiosk-oriented digital visitor management system. 
 
-## Overview
+Built with Next.js and Firebase, the system allows students and faculty to seamlessly log their library visits using their institutional Google accounts, while providing administrators with a powerful dashboard to monitor and export visitor data.
 
-### Visitor Flow
+## Features
 
-- Google sign-in restricted to `@neu.edu.ph`
-- First-time onboarding for role and department or office selection
-- Visit logging with predefined reasons
-- Returning users can go directly to the visit logging screen
-- Blocked users are redirected to an access denied page
-
-### Role Logic
-
-- Admin access is driven by the Firestore `users.role` field
-- `johnmarc.sanchez@neu.edu.ph` is auto-bootstrapped as `Admin` on first login
-- Prototype quick-access actions for admin and student are still available on the login screen
-- Student emails follow the pattern `firstname.lastname@neu.edu.ph`
-- Staff emails typically have no dot in the local part
-- Staff users complete role selection during onboarding:
-   - `Faculty` selects from academic colleges
-   - `Employee` selects from administrative offices
-
-### Admin Features
-
-- Dashboard with recent check-ins and live activity summaries
-- Reports page with filters for:
-   - user role
-   - college or office
-   - visit reason
-   - date range
-- CSV export for filtered reports
-- User management with block and unblock controls
-
-### UI
-
-- Full-screen slideshow backgrounds on login, onboarding, and visit logging pages
-- Glassmorphism card layout
-- Responsive layout suitable for kiosk and desktop use
-
-## Current Authentication Model
-
-This project uses Firebase Authentication with Google sign-in.
-
-- Users authenticate through a Google popup flow
-- Only `@neu.edu.ph` accounts are accepted
-- If a user does not exist in Firestore, a profile is created using their Firebase UID
-- User authorization (including admin access and blocked state) is resolved from Firestore user data
+* **Streamlined Visitor Flow:** * Secure Google Sign-In restricted strictly to `@neu.edu.ph` accounts.
+  * Quick, one-time onboarding for new users to set their role (Student, Faculty, or Employee) and department.
+  * One-click visit logging with predefined reasons for returning users.
+* **Admin Dashboard & Reporting:**
+  * Live monitoring of recent check-ins and activity summaries.
+  * Comprehensive reports with filtering by user role, college/office, visit reason, and date range.
+  * CSV export functionality for library attendance records.
+  * User access management (block/unblock users).
+* **Modern UI:** Responsive, glassmorphism design optimized for shared kiosk displays and desktop use.
 
 ## Tech Stack
 
-- Next.js 15 App Router
-- React 19
-- TypeScript
-- Tailwind CSS
-- shadcn/ui components
-- Firebase Firestore
-- date-fns
-- Lucide React
+* **Frontend:** Next.js 15 (App Router), React 19, TypeScript
+* **Styling & UI:** Tailwind CSS, shadcn/ui, Lucide React
+* **Backend & Database:** Firebase Authentication, Firebase Firestore
 
-## Project Structure
-
-```text
-src/
-   app/
-      login/                Email entry
-      onboarding/           First-time role and department setup
-      log-visit/            Returning user visit logging
-      success/              Post-check-in confirmation
-      denied/               Blocked user screen
-      admin/
-         dashboard/          Admin summary page
-         reports/            Filterable reports and CSV export
-         users/              User management
-   components/
-      layout/               Admin layout shell
-      ui/                   Reusable UI primitives
-   lib/
-      constants.ts          Roles, colleges, offices, visit reasons
-      firebase.ts           Firestore initialization
-      store.ts              Firestore-backed data helpers
-```
-
-## Setup
+## Setup & Installation
 
 ### Prerequisites
+* Node.js 18 or later
+* Access to the configured Firebase project
 
-- Node.js 18 or later
-- npm
-- Access to the configured Firebase project
-
-### Install Dependencies
-
+### 1. Install Dependencies
 ```bash
 npm install
 ```
 
-### Run Locally
+### 2. Environment Variables
+Create a `.env.local` file in the root directory and add your Firebase configuration:
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+```
 
+### 3. Run the Development Server
 ```bash
 npm run dev
 ```
+Open [http://localhost:9002](http://localhost:9002) in your browser to view the application. 
 
-The development server runs on:
-
-```text
-http://localhost:9002
-```
-
-### Firebase Authentication Setup
-
-1. Open Firebase Console and enable Google provider in Authentication.
-2. Add localhost and production domains to authorized domains.
-3. Configure `.env.local` with Firebase client keys:
-   - `NEXT_PUBLIC_FIREBASE_API_KEY`
-   - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-   - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
-   - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
-   - `NEXT_PUBLIC_FIREBASE_APP_ID`
-
-## Available Scripts
-
-```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
-npm run typecheck
-```
-
-The repository also includes Genkit-related scripts in `package.json`, but the current visitor logging and admin flows documented here are based on the app’s Firestore-backed implementation.
-
-## Data Stored
-
-### User Records
-
-User documents contain:
-
-- `id`
-- `email`
-- `name`
-- `role`
-- `collegeOrOffice`
-- `isBlocked`
-
-### Visit Logs
-
-Visit log documents contain:
-
-- `userId`
-- `userName`
-- `userEmail`
-- `userRole`
-- `collegeOrOffice`
-- `reason`
-- `timestamp`
-
-## Onboarding Rules
-
-- New users are routed to onboarding after first login
-- Students select from academic colleges
-- Staff users first choose either `Faculty` or `Employee`
-- Faculty users select from academic colleges
-- Employee users select from administrative offices
-- After onboarding, the first visit log is created immediately
-
-## Deployment Notes
-
-- Firebase configuration is currently defined in `src/lib/firebase.ts`
-- If you switch Firebase projects, update that file first
-- Before production rollout, review Firestore security rules and remove any demo shortcuts you do not want exposed
+## Project Structure (Core)
+* `src/app/login/` - Institutional email authentication
+* `src/app/onboarding/` - First-time setup for roles and departments
+* `src/app/log-visit/` - Kiosk interface for returning users
+* `src/app/admin/` - Admin dashboard, report generation, and user management
 
 ## Author
-
-John Marc Sanchez
+**John Marc Sanchez**

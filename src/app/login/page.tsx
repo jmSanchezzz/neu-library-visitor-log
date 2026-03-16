@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, MoveRight } from "lucide-react";
 import { ADMIN_EMAIL, UserRole } from "@/lib/constants";
@@ -31,14 +31,6 @@ export default function LoginPage() {
   const { toast } = useToast();
   const bootstrapAdminEmail = "johnmarc.sanchez@neu.edu.ph";
   const prototypeStudentEmail = "student.demo@neu.edu.ph";
-  const loadingResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const clearLoadingResetTimer = () => {
-    if (loadingResetTimerRef.current) {
-      clearTimeout(loadingResetTimerRef.current);
-      loadingResetTimerRef.current = null;
-    }
-  };
 
   const resolveLoginErrorMessage = (error: unknown) => {
     if (typeof error === "object" && error !== null && "code" in error) {
@@ -94,35 +86,14 @@ export default function LoginPage() {
     return () => {
       unsubscribe();
       clearInterval(slideTimer);
-      clearLoadingResetTimer();
     };
   }, [router]);
 
-  const handleLogin = async (options?: { roleHint?: UserRole; requireAdmin?: boolean }) => {
-    clearLoadingResetTimer();
+  const handleLogin = async () => {
     setIsLoading(true);
 
-    loadingResetTimerRef.current = setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Sign-In Timed Out",
-        description: "The Google sign-in window was closed or took too long. Please try again.",
-        variant: "destructive",
-      });
-    }, 20000);
-
     try {
-      const user = await mockStore.signInWithGoogle(options?.roleHint);
-
-      if (options?.requireAdmin && user.role !== "Admin") {
-        await mockStore.signOutCurrentUser();
-        toast({
-          title: "Admin Access Required",
-          description: `Use ${bootstrapAdminEmail} to access the admin portal.`,
-          variant: "destructive",
-        });
-        return;
-      }
+      const user = await mockStore.signInWithGoogle();
 
       if (user.isBlocked) {
         router.push("/denied");
@@ -144,7 +115,6 @@ export default function LoginPage() {
         variant: "destructive",
       });
     } finally {
-      clearLoadingResetTimer();
       setIsLoading(false);
     }
   };
