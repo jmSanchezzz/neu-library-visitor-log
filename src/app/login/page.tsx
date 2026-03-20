@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, MoveRight } from "lucide-react";
 import { ADMIN_EMAIL, UserRole } from "@/lib/constants";
+import { shouldClearExistingAuthOnLoginRoute } from "@/lib/auth-policy";
 import { mockStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 
@@ -61,29 +62,46 @@ export default function LoginPage() {
   useEffect(() => {
     setMounted(true);
     setYear(new Date().getFullYear());
+    let isActive = true;
+    let unsubscribe = () => {};
 
-    const unsubscribe = mockStore.onCurrentUserChange((currentUser) => {
-      if (!currentUser) return;
-
-      if (currentUser.isBlocked) {
-        router.push("/denied");
-        return;
+    const initializeLoginPage = async () => {
+      if (shouldClearExistingAuthOnLoginRoute()) {
+        try {
+          await mockStore.resetSessionForFreshLogin();
+        } catch (error) {
+          console.error("Failed to reset auth state on login page load:", error);
+        }
       }
 
-      if (currentUser.role === "Admin") {
-        router.push("/admin/dashboard");
-      } else if (!currentUser.collegeOrOffice) {
-        router.push("/onboarding");
-      } else {
-        router.push("/log-visit");
-      }
-    });
+      if (!isActive) return;
+
+      unsubscribe = mockStore.onCurrentUserChange((currentUser) => {
+        if (!currentUser) return;
+
+        if (currentUser.isBlocked) {
+          router.push("/denied");
+          return;
+        }
+
+        if (currentUser.role === "Admin") {
+          router.push("/admin/dashboard");
+        } else if (!currentUser.collegeOrOffice) {
+          router.push("/onboarding");
+        } else {
+          router.push("/log-visit");
+        }
+      });
+    };
+
+    void initializeLoginPage();
     
     const slideTimer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
     }, 6000);
     
     return () => {
+      isActive = false;
       unsubscribe();
       clearInterval(slideTimer);
     };

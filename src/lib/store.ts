@@ -1,6 +1,6 @@
 "use client";
 
-import { ADMIN_EMAILS, ALLOWED_DOMAIN, UserRole } from "./constants";
+import { ALLOWED_DOMAIN, UserRole } from "./constants";
 import { 
   collection, 
   doc, 
@@ -13,10 +13,13 @@ import {
 } from "firebase/firestore";
 import {
   User as FirebaseUser,
+  browserSessionPersistence,
   onAuthStateChanged,
+  setPersistence,
   signInWithPopup,
   signOut
 } from "firebase/auth";
+import { isAdminEmail, LOGIN_PERSISTENCE } from "./auth-policy";
 import { auth, db, googleProvider } from "./firebase";
 
 export interface User {
@@ -44,7 +47,6 @@ const SESSION_MODE_KEY = "neu_session_mode";
 type SessionMode = "firebase" | "prototype";
 const RECENT_SYNC_WINDOW_MS = 30000;
 
-const ADMIN_EMAIL_SET = new Set(ADMIN_EMAILS.map((email) => email.toLowerCase()));
 const recentFirebaseSyncByUid = new Map<string, number>();
 
 function toFirestoreUser(user: User): Record<string, unknown> {
@@ -106,6 +108,10 @@ export const mockStore = {
     }
   },
   signInWithGoogle: async (roleHint?: UserRole): Promise<User> => {
+    if (LOGIN_PERSISTENCE === "session") {
+      await setPersistence(auth, browserSessionPersistence);
+    }
+
     const result = await signInWithPopup(auth, googleProvider);
     setSessionMode("firebase");
     const user = await mockStore.syncUserFromAuth(result.user, roleHint);
@@ -121,14 +127,14 @@ export const mockStore = {
     const users = await mockStore.getUsers();
     const existingUser = users.find((user) => user.email.toLowerCase() === normalizedEmail);
     const localPart = normalizedEmail.split("@")[0];
-    const isAdminEmail = ADMIN_EMAIL_SET.has(normalizedEmail);
-    const inferredRole: UserRole = isAdminEmail
+    const adminEmail = isAdminEmail(normalizedEmail);
+    const inferredRole: UserRole = adminEmail
       ? "Admin"
       : localPart.includes(".")
         ? "Student"
         : "Faculty";
 
-    const resolvedRole = isAdminEmail
+    const resolvedRole = adminEmail
       ? "Admin"
       : existingUser?.role || roleHint || inferredRole;
 
@@ -162,14 +168,14 @@ export const mockStore = {
     const existingUser = existingSnapshot.exists() ? (existingSnapshot.data() as User) : null;
 
     const localPart = normalizedEmail.split("@")[0];
-    const isAdminEmail = ADMIN_EMAIL_SET.has(normalizedEmail);
-    const inferredRole: UserRole = isAdminEmail
+    const adminEmail = isAdminEmail(normalizedEmail);
+    const inferredRole: UserRole = adminEmail
       ? "Admin"
       : localPart.includes(".")
         ? "Student"
         : "Faculty";
 
-    const resolvedRole = isAdminEmail
+    const resolvedRole = adminEmail
       ? "Admin"
       : existingUser?.role || roleHint || inferredRole;
 
@@ -201,6 +207,11 @@ export const mockStore = {
     await signOut(auth);
     setSessionMode(null);
     mockStore.setCurrentUser(null);
+  },
+  resetSessionForFreshLogin: async () => {
+    setSessionMode(null);
+    mockStore.setCurrentUser(null);
+    await signOut(auth);
   },
   getPrototypeSessionUser: () => {
     if (getSessionMode() !== "prototype") return null;

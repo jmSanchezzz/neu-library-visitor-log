@@ -55,4 +55,8 @@ export type UserRole = "Admin" | "Student" | "Faculty" | "Employee";
 
 export const ALLOWED_DOMAIN = "@neu.edu.ph";
 export const ADMIN_EMAIL = "johnmarc.sanchez@neu.edu.ph";
-export const ADMIN_EMAILS = [ADMIN_EMAIL, "admin@neu.edu.ph"] as const;
+export const ADMIN_EMAILS = [
+  ADMIN_EMAIL,
+  "admin@neu.edu.ph",
+  "jcesperanza@neu.edu.ph"
+] as const;
