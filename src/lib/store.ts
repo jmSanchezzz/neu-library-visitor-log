@@ -1,16 +1,18 @@
 "use client";
 
 import { ALLOWED_DOMAIN, UserRole } from "./constants";
-import { 
+import {
   collection, 
   doc, 
   getDoc,
   getDocs, 
   setDoc, 
   addDoc, 
+  serverTimestamp,
   query, 
   orderBy
 } from "firebase/firestore";
+import { AuditLog, AuditLogInput, buildAuditLogInput } from "./audit";
 import {
   User as FirebaseUser,
   browserSessionPersistence,
@@ -92,6 +94,30 @@ function wasUserRecentlySynced(uid: string): boolean {
   const lastSyncedAt = recentFirebaseSyncByUid.get(uid);
   if (!lastSyncedAt) return false;
   return Date.now() - lastSyncedAt < RECENT_SYNC_WINDOW_MS;
+}
+
+function normalizeAuditLogDoc(
+  doc: { id: string; data: () => Record<string, unknown> }
+): AuditLog | null {
+  const data = doc.data() as Record<string, unknown> & {
+    timestamp?: { toDate?: () => Date } | string;
+  };
+
+  let timestamp: string | null = null;
+
+  if (typeof data.timestamp === "string") {
+    timestamp = data.timestamp;
+  } else if (data.timestamp && typeof data.timestamp.toDate === "function") {
+    timestamp = data.timestamp.toDate().toISOString();
+  }
+
+  if (!timestamp) return null;
+
+  return {
+    id: doc.id,
+    ...data,
+    timestamp
+  } as AuditLog;
 }
 
 export const mockStore = {
@@ -267,6 +293,26 @@ export const mockStore = {
     const q = query(logsCol, orderBy("timestamp", "desc"));
     const snapshot = await withTimeout(getDocs(q), 10000);
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as VisitLog));
+  },
+  getAuditLogs: async (): Promise<AuditLog[]> => {
+    const auditLogsCol = collection(db, "auditLogs");
+    const q = query(auditLogsCol, orderBy("timestamp", "desc"));
+    const snapshot = await withTimeout(getDocs(q), 10000);
+    return snapshot.docs
+      .map((doc) => normalizeAuditLogDoc(doc))
+      .filter((log): log is AuditLog => log !== null);
+  },
+  logAuditEvent: async (input: AuditLogInput): Promise<Omit<AuditLog, "timestamp">> => {
+    const auditLogsCol = collection(db, "auditLogs");
+    const payload = buildAuditLogInput(input);
+    const docRef = await withTimeout(
+      addDoc(auditLogsCol, {
+        ...payload,
+        timestamp: serverTimestamp()
+      }),
+      10000
+    );
+    return { id: docRef.id, ...payload } as Omit<AuditLog, "timestamp">;
   },
   addVisitLog: async (log: Omit<VisitLog, 'id' | 'timestamp'>) => {
     const logsCol = collection(db, "visitLogs");

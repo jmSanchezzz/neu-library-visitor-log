@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { COLLEGES, OFFICES, REASONS } from "@/lib/constants";
+import { buildReportExportAuditDetails } from "@/lib/audit";
 import { mockStore, VisitLog } from "@/lib/store";
 import { 
   Download, 
@@ -119,6 +120,19 @@ export default function ReportsPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    const currentAdmin = mockStore.getCurrentUser();
+    if (currentAdmin?.role === "Admin") {
+      void mockStore.logAuditEvent({
+        type: "reports.export_csv",
+        actorEmail: currentAdmin.email,
+        actorName: currentAdmin.name,
+        details: buildReportExportAuditDetails(filteredLogs.length),
+        metadata: { recordCount: filteredLogs.length }
+      }).catch((error) => {
+        console.error("Failed to log report export audit event:", error);
+      });
+    }
   };
 
   const resetFilters = () => {

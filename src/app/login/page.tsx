@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, MoveRight } from "lucide-react";
 import { ADMIN_EMAIL, UserRole } from "@/lib/constants";
@@ -32,6 +32,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const bootstrapAdminEmail = "johnmarc.sanchez@neu.edu.ph";
   const prototypeStudentEmail = "student.demo@neu.edu.ph";
+  const blockedAuditKeys = useRef(new Set<string>());
 
   const resolveLoginErrorMessage = (error: unknown) => {
     if (typeof error === "object" && error !== null && "code" in error) {
@@ -59,6 +60,23 @@ export default function LoginPage() {
       : "Could not connect to Firebase Authentication. Please try again.";
   };
 
+  const logBlockedUserAttempt = (email: string, name: string, source: "google" | "prototype" | "session") => {
+    const attemptKey = `${email}:${source}`;
+    if (blockedAuditKeys.current.has(attemptKey)) return;
+    blockedAuditKeys.current.add(attemptKey);
+
+    void mockStore.logAuditEvent({
+      type: "security.blocked_user_login_attempt",
+      actorEmail: email,
+      actorName: name,
+      targetEmail: email,
+      targetName: name,
+      details: `Blocked user attempted to sign in via ${source}`
+    }).catch((error) => {
+      console.error("Failed to log blocked user login attempt:", error);
+    });
+  };
+
   useEffect(() => {
     setMounted(true);
     setYear(new Date().getFullYear());
@@ -80,6 +98,7 @@ export default function LoginPage() {
         if (!currentUser) return;
 
         if (currentUser.isBlocked) {
+          logBlockedUserAttempt(currentUser.email, currentUser.name, "session");
           router.push("/denied");
           return;
         }
@@ -114,6 +133,7 @@ export default function LoginPage() {
       const user = await mockStore.signInWithGoogle();
 
       if (user.isBlocked) {
+        logBlockedUserAttempt(user.email, user.name, "google");
         router.push("/denied");
         return;
       }
@@ -154,6 +174,7 @@ export default function LoginPage() {
       }
 
       if (user.isBlocked) {
+        logBlockedUserAttempt(user.email, user.name, "prototype");
         router.push("/denied");
         return;
       }

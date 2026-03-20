@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
@@ -8,8 +8,10 @@ import {
   FileText, 
   Users, 
   LogOut,
-  GraduationCap
+  GraduationCap,
+  Shield
 } from "lucide-react";
+import { shouldLogAdminSignIn, shouldLogUnauthorizedAdminAccess } from "@/lib/audit";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { mockStore, User } from "@/lib/store";
@@ -18,12 +20,15 @@ const NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
   { label: "Visit Reports", icon: FileText, href: "/admin/reports" },
   { label: "User Access", icon: Users, href: "/admin/users" },
+  { label: "Audit Timeline", icon: Shield, href: "/admin/audit" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [adminUser, setAdminUser] = useState<User | null>(null);
+  const hasLoggedAdminSignIn = useRef(false);
+  const unauthorizedAttemptKeys = useRef(new Set<string>());
 
   useEffect(() => {
     const unsubscribe = mockStore.onCurrentUserChange((currentUser) => {
@@ -37,16 +42,47 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return;
       }
 
+      if (shouldLogUnauthorizedAdminAccess(currentUser.role, pathname)) {
+        const attemptKey = `${currentUser.id}:${pathname}`;
+        if (!unauthorizedAttemptKeys.current.has(attemptKey)) {
+          unauthorizedAttemptKeys.current.add(attemptKey);
+          void mockStore.logAuditEvent({
+            type: "security.non_admin_admin_access_attempt",
+            actorEmail: currentUser.email,
+            actorName: currentUser.name,
+            targetEmail: currentUser.email,
+            targetName: currentUser.name,
+            details: `Non-admin user attempted to access ${pathname}`
+          }).catch((error) => {
+            console.error("Failed to log unauthorized admin access attempt:", error);
+          });
+        }
+      }
+
       if (currentUser.role !== "Admin") {
         router.push("/log-visit");
         return;
+      }
+
+      if (shouldLogAdminSignIn(currentUser.role, pathname) && !hasLoggedAdminSignIn.current) {
+        hasLoggedAdminSignIn.current = true;
+        void mockStore.logAuditEvent({
+          type: "admin.sign_in",
+          actorEmail: currentUser.email,
+          actorName: currentUser.name,
+          targetEmail: currentUser.email,
+          targetName: currentUser.name,
+          details: `Admin accessed ${pathname}`
+        }).catch((error) => {
+          console.error("Failed to log admin sign-in audit event:", error);
+        });
       }
 
       setAdminUser(currentUser);
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, [pathname, router]);
 
   const handleLogout = async () => {
     await mockStore.signOutCurrentUser();

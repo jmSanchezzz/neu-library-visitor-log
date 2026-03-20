@@ -13,16 +13,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { describeUserAccessAuditAction } from "@/lib/audit";
 import { mockStore, User } from "@/lib/store";
 import { Search, Ban, Unlock, User as UserIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function UsersManagementPage() {
   const [usersList, setUsersList] = useState<User[]>([]);
+  const [adminUser, setAdminUser] = useState<User | null>(null);
   const [search, setSearch] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
+    setAdminUser(mockStore.getCurrentUser());
+
     const fetchUsers = async () => {
       try {
         const users = await mockStore.getUsers();
@@ -49,6 +53,21 @@ export default function UsersManagementPage() {
   const toggleBlockStatus = async (user: User) => {
     const updatedUser = { ...user, isBlocked: !user.isBlocked };
     await mockStore.saveUser(updatedUser);
+
+    if (adminUser) {
+      try {
+        await mockStore.logAuditEvent({
+          type: updatedUser.isBlocked ? "user.blocked" : "user.unblocked",
+          actorEmail: adminUser.email,
+          actorName: adminUser.name,
+          targetEmail: updatedUser.email,
+          targetName: updatedUser.name,
+          details: describeUserAccessAuditAction(updatedUser.isBlocked ?? false)
+        });
+      } catch (error) {
+        console.error("Failed to log user access audit event:", error);
+      }
+    }
     
     // Refresh local state
     const updatedList = usersList.map(u => u.id === user.id ? updatedUser : u);
