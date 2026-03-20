@@ -4,6 +4,9 @@ This project was developed for the Software Engineering 2 course to modernize th
 
 Built with Next.js and Firebase, the system allows students and faculty to seamlessly log their library visits using their institutional Google accounts, while providing administrators with a powerful dashboard to monitor and export visitor data.
 
+## Live Demo
+## [neu-library-visitor-log-one.vercel.app](https://neu-library-visitor-log-one.vercel.app/)
+
 ## Features
 
 * **Streamlined Visitor Flow:** * Secure Google Sign-In restricted strictly to `@neu.edu.ph` accounts.
